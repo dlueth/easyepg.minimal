@@ -1,0 +1,10 @@
+version: '3'
+services:
+  easyepg:
+    image: easyepg:latest
+    volumes:
+      - ./volume:/easyepg
+    environment:
+      TZ: Europe/Berlin
+      PGID: 1099
+      PUID: 1099
