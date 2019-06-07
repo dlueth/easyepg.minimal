@@ -2,7 +2,7 @@ FROM debian:stretch-slim
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
-      org.label-schema.name="minimal easyepg"
+      org.label-schema.name="easyepg.minimal"
 
 ENV DEBIAN_FRONTEND="noninteractive" \
     TERM=xterm \
