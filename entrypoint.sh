@@ -13,7 +13,7 @@ if [[ -z "${PUID}" ]]; then
   PUID="1099"
 fi
 
-if [ ! -f /easyepg/epg.sh ]; then
+if [[ ! -f /easyepg/epg.sh ]]; then
   cd /easyepg
   git init .
   git remote add -f origin https://github.com/sunsettrack4/easyepg.git
@@ -22,6 +22,7 @@ if [ ! -f /easyepg/epg.sh ]; then
   cd /
 else
   cd /easyepg
+  git checkout -- .
   git pull
   cd /
 fi
