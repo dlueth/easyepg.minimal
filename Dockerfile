@@ -52,7 +52,7 @@ RUN apt-get -qy update \
     && apt-get remove --purge -qy ${BUILD_DEPENDENCIES} \
     && apt-get -qy autoclean \
     && apt-get -qy clean \
-    && apt-get -qy autoremove \
+    && apt-get -qy autoremove --purge \
     && rm -rf ${BUILD_PATHS}
 
 VOLUME /easyepg

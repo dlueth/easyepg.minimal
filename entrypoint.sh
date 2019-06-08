@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-if [ -z "${TZ}" ]; then
+if [[ -z "${TZ}" ]]; then
   TZ="Europe/Berlin"
 fi
 
-if [ -z "${PGID}" ]; then
+if [[ -z "${PGID}" ]]; then
   PGID="1099"
 fi
 
-if [ -z "${PUID}" ]; then
+if [[ -z "${PUID}" ]]; then
   PUID="1099"
 fi
 
@@ -29,9 +29,9 @@ fi
 ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata
 
-groupadd --gid ${PGID} easyepg
-useradd --uid ${PUID} --gid easyepg --home /easyepg --shell /bin/bash easyepg
-chown -R easyepg:easyepg /easyepg
-chown -R easyepg:easyepg /tmp
+groupadd --force --gid ${PGID} easyepg
+useradd --uid ${PUID} --gid ${PGID} --home /easyepg --shell /bin/bash easyepg
+chown -R ${PUID}:${PGID} /easyepg
+chown -R ${PUID}:${PGID} /tmp
 
 su easyepg -c "cd /easyepg && ./epg.sh"

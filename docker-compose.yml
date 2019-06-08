@@ -6,9 +6,9 @@ services:
     volumes:
       - ./volume:/easyepg
     environment:
-      TZ: Europe/Berlin
-      PGID: 1099
-      PUID: 1099
+      TZ: ${TZ}
+      PGID: ${PGID}
+      PUID: ${PUID}
   setup:
     image: qoopido/easyepg.minimal:latest
     entrypoint:
@@ -19,6 +19,6 @@ services:
     volumes:
       - ./volume:/easyepg
     environment:
-      TZ: Europe/Berlin
-      PGID: 1099
-      PUID: 1099
+      TZ: ${TZ}
+      PGID: ${PGID}
+      PUID: ${PUID}
