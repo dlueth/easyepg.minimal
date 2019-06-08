@@ -1,7 +1,21 @@
 version: '3'
 services:
-  easyepg:
+  run:
     image: qoopido/easyepg.minimal:latest
+    container_name: easyepg
+    volumes:
+      - ./volume:/easyepg
+    environment:
+      TZ: Europe/Berlin
+      PGID: 1099
+      PUID: 1099
+  setup:
+    image: qoopido/easyepg.minimal:latest
+    entrypoint:
+      - tail
+      - -f
+      - /dev/null
+    container_name: easyepg-setup
     volumes:
       - ./volume:/easyepg
     environment:
