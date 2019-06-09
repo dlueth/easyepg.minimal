@@ -13,7 +13,7 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     BUILD_DEPENDENCIES="build-essential" \
     DEPENDENCIES="iproute2 phantomjs dialog curl wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping cpanminus"
 
-COPY entrypoint.sh /entrypoint.sh
+COPY root/entrypoint.sh /entrypoint.sh
 
 RUN apt-get -qy update \
     ### tweak some apt & dpkg settngs

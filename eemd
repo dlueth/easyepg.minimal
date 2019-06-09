@@ -1,0 +1,78 @@
+#!/bin/bash
+
+TZ=$(cat /etc/timezone)
+PGID=$(id -g `whoami`)
+PUID=$(id -u `whoami`)
+COLOR_NOTICE='\e[95m'
+COLOR_ERROR='\e[91m'
+COLOR_NONE='\e[39m'
+
+logDefault()
+{
+  echo -e "$1"
+}
+
+logNotice()
+{
+  echo -e "${COLOR_NOTICE}$1${COLOR_NONE}"
+}
+
+logError()
+{
+  echo -e "${COLOR_ERROR}$1${COLOR_NONE}" 1>&2
+}
+
+build()
+{
+  logDefault "Building docker container..."
+  docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:latest .
+  logNotice "Successfully built docker container"
+}
+
+setup()
+{
+  if [[ ! -d ${1} || ! -w ${1} ]]; then
+    logError "Usage: mee setup [path to volume]"
+    exit 1
+  fi
+
+  VOLUME=$(cd ${1} && pwd -P)
+
+  logDefault "Starting docker container..."
+  docker run --rm -ti -d -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-setup --entrypoint tail qoopido/easyepg.minimal:latest -f /dev/null
+  docker exec -ti easyepg-setup /bin/bash
+  docker stop easyepg-setup
+  logNotice "Successfully stopped container"
+}
+
+run()
+{
+  if [[ ! -d ${1} || ! -w ${1} ]]; then
+    logError "Usage: mee run [path to volume]"
+    exit 1
+  fi
+
+  VOLUME=$(cd ${1} && pwd -P)
+
+  logDefault "Starting docker container..."
+  docker run --rm -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg qoopido/easyepg.minimal:latest
+  logNotice "Successfully stopped container"
+}
+
+case "${1}" in
+  build)
+    build
+    ;;
+  setup)
+    setup ${2}
+    ;;
+  run)
+    run ${2}
+    ;;
+  *)
+    logError "Usage: mee [build|setup|run]"
+    exit 1
+    ;;
+esac
+
+exit 0
