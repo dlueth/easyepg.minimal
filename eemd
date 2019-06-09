@@ -32,7 +32,7 @@ build()
 setup()
 {
   if [[ ! -d ${1} || ! -w ${1} ]]; then
-    logError "Usage: mee setup [path to volume]"
+    logError "Usage: eemd setup [path to volume]"
     exit 1
   fi
 
@@ -48,7 +48,7 @@ setup()
 run()
 {
   if [[ ! -d ${1} || ! -w ${1} ]]; then
-    logError "Usage: mee run [path to volume]"
+    logError "Usage: eemd run [path to volume]"
     exit 1
   fi
 
@@ -70,7 +70,7 @@ case "${1}" in
     run ${2}
     ;;
   *)
-    logError "Usage: mee [build|setup|run]"
+    logError "Usage: eemd [build|setup|run]"
     exit 1
     ;;
 esac
