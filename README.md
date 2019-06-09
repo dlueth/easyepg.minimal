@@ -26,7 +26,7 @@ You should now be ready for your first run. Issue `eemd run ~/easyepg` from your
 Still as the user you would like to run docker under issue `crontab -e` and put in the following lines
 
 ```
-0 2 * * * eemd run ~/easyepg
+0 2 * * * /usr/local/sbin/eemd run ~/easyepg
 0 4 * * * cat ~/easyepg/xml/[your file].xml | socat - UNIX-CONNECT:/home/hts/.hts/tvheadend/epggrab/xmltv.sock
 10 4 * * * cat ~/easyepg/xml/[your file].xml | socat - UNIX-CONNECT:/home/hts/.hts/tvheadend/epggrab/xmltv.sock
 ```
