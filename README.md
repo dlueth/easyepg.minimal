@@ -49,5 +49,5 @@ docker run --rm -ti -d \
   -e "PGID=${PGID}" \ # Group-ID, defaults to 1099 
   -e "PUID=${PUID}" \ # User-ID, defaults to 1099
   -v ${VOLUME}:/easyepg \ # Absolute (!) path to a shared directory storing easyepg & its settings
-  --name easyepg-minimal-cron qoopido/easyepg.minimal:1.0.6-rc.1
+  --name easyepg-cron qoopido/easyepg.minimal:1.0.6-rc.1
 ```
