@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [[ -z "${MODE}" ]]; then
+  MODE="run"
+fi
+
 if [[ -z "${TZ}" ]]; then
   TZ="Europe/Berlin"
 fi
@@ -43,4 +47,15 @@ chown -R ${PUID}:${PGID} /tmp
 
 USERNAME=$(getent passwd ${PUID} | cut -d: -f1)
 
-su ${USERNAME} -c "cd /easyepg && ./epg.sh"
+case "${MODE}" in
+  run)
+    exec su ${USERNAME} -c "cd /easyepg && ./epg.sh"
+    ;;
+  cron)
+    su ${USERNAME} -c "crontab /crontab"
+    exec su ${USERNAME} -c "tail -f /dev/null"
+    ;;
+  *)
+    exec su ${USERNAME} -c "tail -f /dev/null"
+    ;;
+esac

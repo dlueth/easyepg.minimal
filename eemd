@@ -24,25 +24,21 @@ logError()
 
 build()
 {
-  logDefault "Building docker container..."
-  docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:latest .
-  logNotice "Successfully built docker container"
+  docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:latest .
 }
 
-setup()
+admin()
 {
   if [[ ! -d ${1} || ! -w ${1} ]]; then
-    logError "Usage: eemd setup [path to volume]"
+    logError "Usage: eemd admin [path to volume]"
     exit 1
   fi
 
   VOLUME=$(cd ${1} && pwd -P)
 
-  logDefault "Starting docker container..."
-  docker run --rm -ti -d -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-setup --entrypoint tail qoopido/easyepg.minimal:latest -f /dev/null
-  docker exec -ti easyepg-setup /bin/bash
-  docker stop easyepg-setup
-  logNotice "Successfully stopped container"
+  docker run --rm -ti -d -e "MODE=admin" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-minimal-admin qoopido/easyepg.minimal:latest
+  docker exec -ti easyepg-minimal-admin /bin/bash
+  docker stop easyepg-minimal-admin
 }
 
 run()
@@ -54,23 +50,36 @@ run()
 
   VOLUME=$(cd ${1} && pwd -P)
 
-  logDefault "Starting docker container..."
-  docker run --rm -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg qoopido/easyepg.minimal:latest
-  logNotice "Successfully stopped container"
+  docker run --rm -e "MODE=run" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-minimal-run qoopido/easyepg.minimal:latest
+}
+
+cron()
+{
+  if [[ ! -d ${1} || ! -w ${1} ]]; then
+    logError "Usage: eemd cron [path to volume]"
+    exit 1
+  fi
+
+  VOLUME=$(cd ${1} && pwd -P)
+
+  docker run --rm -ti -d -e "MODE=cron" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-minimal-cron qoopido/easyepg.minimal:latest
 }
 
 case "${1}" in
   build)
     build
     ;;
-  setup)
-    setup ${2}
+  admin)
+    admin ${2}
     ;;
   run)
     run ${2}
     ;;
+  cron)
+    cron ${2}
+    ;;
   *)
-    logError "Usage: eemd [build|setup|run]"
+    logError "Usage: eemd [build|admin|run|cron]"
     exit 1
     ;;
 esac

@@ -11,9 +11,9 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     LC_ALL="en_US.UTF-8" \
     BUILD_PATHS="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/" \
     BUILD_DEPENDENCIES="build-essential" \
-    DEPENDENCIES="iproute2 procps phantomjs dialog curl wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping cpanminus"
+    DEPENDENCIES="iproute2 procps cron phantomjs dialog curl wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping cpanminus"
 
-COPY root/entrypoint.sh /entrypoint.sh
+COPY root/* /
 
 RUN apt-get -qy update \
     ### tweak some apt & dpkg settngs
