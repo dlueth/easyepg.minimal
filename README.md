@@ -8,7 +8,7 @@ You will need to have `docker` installed on your system and the user you want to
 As root user issue the following commands line by line to download a script and make it globally available:
 
 ``` 
-curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/eemd > /usr/local/sbin/eemd
+curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/feature/nas-support/eemd > /usr/local/sbin/eemd
 chmod +x /usr/local/sbin/eemd
 ```
 
