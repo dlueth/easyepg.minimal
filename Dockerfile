@@ -11,9 +11,10 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     LC_ALL="en_US.UTF-8" \
     BUILD_PATHS="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/" \
     BUILD_DEPENDENCIES="build-essential" \
-    DEPENDENCIES="iproute2 procps cron phantomjs dialog curl wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping cpanminus"
+    DEPENDENCIES="cron iproute2 procps phantomjs dialog curl wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping cpanminus"
 
-COPY root/* /
+COPY root/entrypoint.sh /entrypoint.sh
+COPY root/easyepg /etc/cron.d/easyepg
 
 RUN apt-get -qy update \
     ### tweak some apt & dpkg settngs
@@ -48,13 +49,12 @@ RUN apt-get -qy update \
     && cpanm install utf8 \
     && mkdir -p /easyepg \
     && chmod +x /entrypoint.sh \
+    && chmod 644 /etc/cron.d/easyepg \
     ### cleanup
     && apt-get remove --purge -qy ${BUILD_DEPENDENCIES} \
     && apt-get -qy autoclean \
     && apt-get -qy clean \
     && apt-get -qy autoremove --purge \
     && rm -rf ${BUILD_PATHS}
-
-VOLUME /easyepg
 
 ENTRYPOINT [ "/entrypoint.sh" ]

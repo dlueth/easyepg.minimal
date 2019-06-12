@@ -24,7 +24,7 @@ logError()
 
 build()
 {
-  docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:1.0.6-rc.1 .
+  docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:1.0.6-rc.2 .
 }
 
 admin()
@@ -36,7 +36,7 @@ admin()
 
   VOLUME=$(cd ${1} && pwd -P)
 
-  docker run --cpus 2.0 --rm -ti -d -e "MODE=admin" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-admin qoopido/easyepg.minimal:1.0.6-rc.1
+  docker run --cpus 2.0 --rm -ti -d -e "MODE=admin" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-admin qoopido/easyepg.minimal:1.0.6-rc.2
   docker exec -ti easyepg-admin /bin/bash
   docker stop easyepg-admin
 }
@@ -50,7 +50,7 @@ run()
 
   VOLUME=$(cd ${1} && pwd -P)
 
-  docker run --cpus 2.0 --rm -e "MODE=run" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-run qoopido/easyepg.minimal:1.0.6-rc.1
+  docker run --cpus 2.0 --rm -e "MODE=run" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-run qoopido/easyepg.minimal:1.0.6-rc.2
 }
 
 cron()
@@ -62,7 +62,7 @@ cron()
 
   VOLUME=$(cd ${1} && pwd -P)
 
-  docker run --rm --cpus 2.0 -ti -d -e "MODE=cron" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-cron qoopido/easyepg.minimal:1.0.6-rc.1
+  docker run --rm --cpus 2.0 -ti -d -e "MODE=cron" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-cron qoopido/easyepg.minimal:1.0.6-rc.2
 }
 
 case "${1}" in

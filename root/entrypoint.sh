@@ -28,6 +28,9 @@ else
   cd /easyepg
   git checkout -- .
   git pull
+  git clone https://github.com/sunsettrack4/easyepg.git
+  ./update.sh
+  rm -rf ./easyepg
   cd /
 fi
 
@@ -49,13 +52,12 @@ USERNAME=$(getent passwd ${PUID} | cut -d: -f1)
 
 case "${MODE}" in
   run)
-    exec su ${USERNAME} -c "cd /easyepg && ./epg.sh"
+    su ${USERNAME} -c "cd /easyepg && ./epg.sh"
     ;;
   cron)
-    su ${USERNAME} -c "crontab /crontab"
-    exec su ${USERNAME} -c "tail -f /dev/null"
+    exec /usr/sbin/cron -f -l 0
     ;;
   *)
-    exec su ${USERNAME} -c "tail -f /dev/null"
+    exec tail -f /dev/null
     ;;
 esac
