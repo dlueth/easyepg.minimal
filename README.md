@@ -38,7 +38,7 @@ On most NAS systems supporting docker, containers are supposed to be "always run
 
 There is another mode built-in to support this type of system:
 
-Issue `eemd cron ~/easyepg` to start the container updating epg information at 2am in the morning. This will take care of most things automatically.
+Issue `eemd cron -v ~/easyepg` to start the container updating epg information at 2am in the morning. This will take care of most things automatically.
 
 If you are unable to run a container via shell script you may as well run it directly via
 
