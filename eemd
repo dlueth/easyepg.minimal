@@ -54,7 +54,7 @@ admin()
     exit 1
   fi
 
-  VOLUME=$(cd ${1} && pwd -P)
+  VOLUME=$(cd ${VOLUME} && pwd -P)
 
   docker run --cpus ${LIMIT} --rm -ti -d -e "MODE=admin" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-admin qoopido/easyepg.minimal:1.0.6-rc.3
   docker exec -ti easyepg-admin /bin/bash
@@ -68,7 +68,7 @@ run()
     exit 1
   fi
 
-  VOLUME=$(cd ${1} && pwd -P)
+  VOLUME=$(cd ${VOLUME} && pwd -P)
 
   docker run --cpus ${LIMIT} --rm -e "MODE=run" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-run qoopido/easyepg.minimal:1.0.6-rc.3
 }
@@ -80,7 +80,7 @@ cron()
     exit 1
   fi
 
-  VOLUME=$(cd ${1} && pwd -P)
+  VOLUME=$(cd ${VOLUME} && pwd -P)
 
   docker run --rm --cpus ${LIMIT} -ti -d -e "MODE=cron" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-cron qoopido/easyepg.minimal:1.0.6-rc.3
 }
