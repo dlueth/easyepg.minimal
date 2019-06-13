@@ -1,3 +1,6 @@
+![GitHub release](https://img.shields.io/github/release/dlueth/easyepg.minimal.svg)
+![Docker Pulls](https://img.shields.io/docker/pulls/qoopido/easyepg.minimal.svg)
+
 # easyepg.minimal
 A minimal docker container for running easyepg
 
