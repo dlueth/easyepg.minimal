@@ -4,9 +4,7 @@ while getopts ":v:r:" opt; do
   case $opt in
     v) VOLUME="${OPTARG}"
     ;;
-    r) CPU_RATIO="${OPTARG}"
-    ;;
-    \?) echo "Invalid option -$OPTARG" >&2
+    r) CPU_RATIO=${OPTARG}
     ;;
   esac
 done
@@ -19,7 +17,7 @@ TZ=$(cat /etc/timezone)
 PGID=$(id -g `whoami`)
 PUID=$(id -u `whoami`)
 CPUS=$(grep -c ^processor /proc/cpuinfo)
-LIMIT=$(expr ${CPUS} * ${CPU_RATIO})
+LIMIT=$(echo "${CPUS} * ${CPU_RATIO}" | bc -l)
 COLOR_NOTICE='\e[95m'
 COLOR_ERROR='\e[91m'
 COLOR_NONE='\e[39m'
