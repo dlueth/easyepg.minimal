@@ -1,8 +1,25 @@
 #!/bin/bash
 
+while getopts ":v:r:" opt; do
+  case $opt in
+    v) VOLUME="${OPTARG}"
+    ;;
+    r) CPU_RATIO="${OPTARG}"
+    ;;
+    \?) echo "Invalid option -$OPTARG" >&2
+    ;;
+  esac
+done
+
+if [[ -z "${CPU_RATIO}" ]]; then
+  CPU_RATIO=0.5
+fi
+
 TZ=$(cat /etc/timezone)
 PGID=$(id -g `whoami`)
 PUID=$(id -u `whoami`)
+CPUS=$(grep -c ^processor /proc/cpuinfo)
+LIMIT=$(expr ${CPUS} * ${CPU_RATIO})
 COLOR_NOTICE='\e[95m'
 COLOR_ERROR='\e[91m'
 COLOR_NONE='\e[39m'
@@ -24,45 +41,45 @@ logError()
 
 build()
 {
-  docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:1.0.6-rc.2 .
+  docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:1.0.6-rc.3 .
 }
 
 admin()
 {
-  if [[ ! -d ${1} || ! -w ${1} ]]; then
+  if [[ -z "${VOLUME}" || ! -d "${VOLUME}" || ! -w "${VOLUME}" ]]; then
     logError "Usage: eemd admin [path to volume]"
     exit 1
   fi
 
   VOLUME=$(cd ${1} && pwd -P)
 
-  docker run --cpus 2.0 --rm -ti -d -e "MODE=admin" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-admin qoopido/easyepg.minimal:1.0.6-rc.2
+  docker run --cpus ${LIMIT} --rm -ti -d -e "MODE=admin" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-admin qoopido/easyepg.minimal:1.0.6-rc.3
   docker exec -ti easyepg-admin /bin/bash
   docker stop easyepg-admin
 }
 
 run()
 {
-  if [[ ! -d ${1} || ! -w ${1} ]]; then
-    logError "Usage: eemd run [path to volume]"
+  if [[ -z "${VOLUME}" || ! -d "${VOLUME}" || ! -w "${VOLUME}" ]]; then
+    logError "Usage: eemd run -v \"[path to volume]\""
     exit 1
   fi
 
   VOLUME=$(cd ${1} && pwd -P)
 
-  docker run --cpus 2.0 --rm -e "MODE=run" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-run qoopido/easyepg.minimal:1.0.6-rc.2
+  docker run --cpus ${LIMIT} --rm -e "MODE=run" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-run qoopido/easyepg.minimal:1.0.6-rc.3
 }
 
 cron()
 {
-  if [[ ! -d ${1} || ! -w ${1} ]]; then
-    logError "Usage: eemd cron [path to volume]"
+  if [[ -z "${VOLUME}" || ! -d "${VOLUME}" || ! -w "${VOLUME}" ]]; then
+    logError "Usage: eemd cron -v \"[path to volume]\""
     exit 1
   fi
 
   VOLUME=$(cd ${1} && pwd -P)
 
-  docker run --rm --cpus 2.0 -ti -d -e "MODE=cron" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-cron qoopido/easyepg.minimal:1.0.6-rc.2
+  docker run --rm --cpus ${LIMIT} -ti -d -e "MODE=cron" -e "TZ=${TZ}" -e "PGID=${PGID}" -e "PUID=${PUID}" -v ${VOLUME}:/easyepg --name easyepg-cron qoopido/easyepg.minimal:1.0.6-rc.3
 }
 
 case "${1}" in
@@ -70,16 +87,20 @@ case "${1}" in
     build
     ;;
   admin)
-    admin ${2}
+    admin
     ;;
   run)
-    run ${2}
+    run
     ;;
   cron)
-    cron ${2}
+    cron
     ;;
   *)
     logError "Usage: eemd [build|admin|run|cron]"
+    logError "       -v: string containing the path to the volume for the container to use"
+    logError "           => required for \"run\" and \"cron\""
+    logError "       -r: float for the CPU ratio of the container"
+    logError "           => used by \"admin\", \"run\" and \"cron\", defaults to 0.5"
     exit 1
     ;;
 esac
