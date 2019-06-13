@@ -8,7 +8,7 @@ You will need to have `docker` installed on your system and the user you want to
 As root user issue the following commands line by line to download a script and make it globally available:
 
 ``` 
-curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/feature/nas-support/eemd > /usr/local/sbin/eemd
+curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/eemd > /usr/local/sbin/eemd
 chmod +x /usr/local/sbin/eemd
 ```
 
@@ -49,7 +49,7 @@ docker run --rm -ti -d \
   -e "PGID=${PGID}" \ # Group-ID, defaults to 1099 
   -e "PUID=${PUID}" \ # User-ID, defaults to 1099
   -v ${VOLUME}:/easyepg \ # Absolute (!) path to a shared directory storing easyepg & its settings
-  --name easyepg-cron qoopido/easyepg.minimal:1.0.6-rc.3
+  --name easyepg-cron qoopido/easyepg.minimal:latest
 ```
 
 ### Limiting CPU usage
