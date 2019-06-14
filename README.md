@@ -72,3 +72,11 @@ easyepg -m create -v ~/easyepg
 CPU usage of the created containers will be limited to 0.5 * number of cores by default. So on a machine with 4 cores the container will be limited to 2 cores.
 
 If you want to utilize more or less CPU cores you may add a `-r` to any `easyepg -m create -v ~/easyepg` call and set its value to a positive float with a maximum of `1`. You can re-create easyepg.minimal's containers at any time if none of them is running.
+
+So, e.g.
+
+```
+easyepg -m create -v ~/easyepg -r 0.75
+```
+
+will allow the container to use 3 cores on a machine with 4 cores.
