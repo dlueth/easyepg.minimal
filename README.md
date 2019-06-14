@@ -10,7 +10,7 @@ You will need to have `docker` installed on your system and the user you want to
 ## Installation
 As root user issue the following commands line by line to download easyepg.minimal's utility bash script, make it globally available and pull the image from the docker repository
 ```
-curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/eemd > /usr/local/sbin/easyepg
+curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/easyepg > /usr/local/sbin/easyepg
 chmod +x /usr/local/sbin/easyepg
 docker pull qoopido/easyepg.minimal:latest
 ```
