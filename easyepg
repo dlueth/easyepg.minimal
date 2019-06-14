@@ -22,8 +22,7 @@ if [[ -z "${CPU_RATIO}" ]]; then
 fi
 
 if [[ -z "${TAG}" ]]; then
-  #TAG="latest"
-  TAG="2.0.1-RC.1"
+  TAG="latest"
 fi
 
 TZ=$(cat /etc/timezone &> /dev/null || echo "Europe/Berlin")
@@ -161,10 +160,12 @@ case "${MODE}" in
     ;;
   *)
     logError "Usage: eemd -m [build|publish|create]"
+    logError "       -t: tag for the image"
+    logError "           => used by [build|publish|create], defaults to \"latest\""
     logError "       -v: string containing the path to the volume for the container to use"
-    logError "           => required for \"create\""
+    logError "           => required for [create]"
     logError "       -r: float for the CPU ratio of the container"
-    logError "           => used by \"create\", defaults to 0.5"
+    logError "           => used by [create], defaults to 0.5"
     exit 1
     ;;
 esac

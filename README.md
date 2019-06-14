@@ -2,58 +2,71 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/qoopido/easyepg.minimal.svg)
 
 # easyepg.minimal
-A minimal docker container for running easyepg
+A minimal docker container for running easyepg either on demand or permanently with built-in cronjob
 
 ## Prerequisites
-You will need to have `docker` installed on your system and the user you want to run docker under needs to be in the `docker` group.
+You will need to have `docker` installed on your system and the user you want to run it needs to be in the `docker` group.
 
 ## Installation
-As root user issue the following commands line by line to download a script and make it globally available:
-
-``` 
-curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/eemd > /usr/local/sbin/eemd
-chmod +x /usr/local/sbin/eemd
+As root user issue the following commands line by line to download easyepg.minimal's utility bash script, make it globally available and pull the image from the docker repository
+```
+curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/eemd > /usr/local/sbin/easyepg
+chmod +x /usr/local/sbin/easyepg
+docker pull qoopido/easyepg.minimal:latest
 ```
 
-## Setup & Administration
-Switch over to the user you want to run docker under and create (e.g.) a directory `easyepg` in its home folder.
+The image is a multi-arch build providing variants for amd64, arm32v7 and arm64v8 - the correct variant for your architecture should<sup>TM</sup> be pulled automatically.
 
-Afterwards run `eemd -m admin -v ~/easyepg` to enter the docker container in admin-mode. When you finally see the container's prompt (it will download the image from docker on first run) issue `su - easyepg` followed by `./epg.sh` to start easyepg's setup.
+## Initial setup
+Switch to the user you want to run the container with, create a directory to permanently store easyepg, create containers, start the admin container and enter it via
+```
+mkdir ~/easyepg
+easyepg -m create -v ~/easyepg
+docker start easyepg.admin
+docker exec -ti easyepg.admin /bin/bash
+```
 
-When you are finished setting easyepg up to your liking exit the running docker container by issuing `exit`.
+After you successfully switched into the container issue
+```
+su - easyepg
+./epg-sh
+```
 
-## First run
-There are two ways of running the container depending on your surrounding environment/host.
+to start easyepg's setup and configure it. When your setup is finished return to the shell and issue `exit` to leave the container followed by `docker stop easyepg.admin` to stop it. 
 
-### Directly 
-Issue `eemd -m run -v ~/easyepg` from your command prompt to manually test if everything is working as expected. If it does you might want to create a cronjob on your local host machine:
+## Updating EPG XML-files
 
-Still as the user you would like to run docker under issue `crontab -e` and put in the following lines
+### Via Cronjob on the host (recommended when possible)
+Switch to the user you want to run the container with and issue
 
 ```
-0 2 * * * /usr/local/sbin/eemd -m run -v ~/easyepg
+crontab -e
+```
+
+Append the following lines to the file that should have been opened and replace `[your file]` with the filename of your generated XML
+
+```
+0 2 * * * docker start easyepg.run
 0 4 * * * cat ~/easyepg/xml/[your file].xml | socat - UNIX-CONNECT:/home/hts/.hts/tvheadend/epggrab/xmltv.sock
-10 4 * * * cat ~/easyepg/xml/[your file].xml | socat - UNIX-CONNECT:/home/hts/.hts/tvheadend/epggrab/xmltv.sock
+10 4 * * * cat ~/easyepg/xml/[your file].xml | socat - UNIX-CONNECT:/home/hts/.hts/tvheadend/epggrab/xmltv.sock 
 ```
 
-### NAS-System
-On most NAS systems supporting docker, containers are supposed to be "always running" so the direct approach will most likely not work here.
+Save and exit the file and you are done!
 
-There is another mode built-in to support this type of system:
-
-Issue `eemd -m cron -v ~/easyepg` to start the container updating epg information at 2am in the morning. This will take care of most things automatically.
-
-If you are unable to run a container via shell script you may as well run it directly via
+### As container via built-in cronjob
+Simply run the following command while logged in as the desired user
 
 ```
-docker run --rm -ti -d \
-  -e "MODE=cron" \
-  -e "TZ=${TZ}" \ # Timezone, defaults to Europe/Berlin
-  -e "PGID=${PGID}" \ # Group-ID, defaults to 1099 
-  -e "PUID=${PUID}" \ # User-ID, defaults to 1099
-  -v ${VOLUME}:/easyepg \ # Absolute (!) path to a shared directory storing easyepg & its settings
-  --name easyepg-cron qoopido/easyepg.minimal:latest
+docker start easyepg.run
 ```
 
 ### Limiting CPU usage
-When using the `eemd` CPU usage of the started containers will be limited to 0.5 * number of cores by default. So on a machine with 4 cores the container will be limited to 2 cores by default. If you want to utilize more or less CPU cores you may add a `-r` to any `eemd` call and set its value to a positive float with a maximum of `1`.  
+During the initial setup (see above) when you run
+
+```
+easyepg -m create -v ~/easyepg 
+```
+
+CPU usage of the created containers will be limited to 0.5 * number of cores by default. So on a machine with 4 cores the container will be limited to 2 cores.
+
+If you want to utilize more or less CPU cores you may add a `-r` to any `easyepg -m create -v ~/easyepg` call and set its value to a positive float with a maximum of `1`. You can re-create easyepg.minimal's containers at any time if none of them is running.
