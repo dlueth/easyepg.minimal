@@ -36,8 +36,17 @@ to start easyepg's setup and configure it. When your setup is finished return to
 
 ## Updating EPG XML-files
 
-### Via Cronjob on the host (recommended when possible)
-Switch to the user you want to run the container with and issue
+### Variant A: as container via built-in cronjob
+Simply run the following command while logged in as the desired user
+
+```
+docker start easyepg.cron
+```
+
+There already is a crontab in the container that will run easyepg at 2:00am every night.
+
+### Variant B: via Cronjob on the host
+> Skip this section if you decided to go with Variant A (e.g. you are running the container on a NAS)
 
 ```
 crontab -e
@@ -52,13 +61,6 @@ Append the following lines to the file that should have been opened and replace 
 ```
 
 Save and exit the file and you are done!
-
-### As container via built-in cronjob
-Simply run the following command while logged in as the desired user
-
-```
-docker start easyepg.run
-```
 
 ### Limiting CPU usage
 During the initial setup (see above) when you run
