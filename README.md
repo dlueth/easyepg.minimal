@@ -62,7 +62,7 @@ Append the following lines to the file that should have been opened and replace 
 
 Save and exit the file and you are done!
 
-### Limiting CPU usage
+## Limiting CPU usage
 During the initial setup (see above) when you run
 
 ```
