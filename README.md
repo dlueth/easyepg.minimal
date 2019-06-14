@@ -36,7 +36,7 @@ to start easyepg's setup and configure it. When your setup is finished return to
 
 ## Updating EPG XML-files
 
-### Variant A: as container via built-in cronjob
+### Variant A: via Cronjob in the container
 Simply run the following command while logged in as the desired user
 
 ```
