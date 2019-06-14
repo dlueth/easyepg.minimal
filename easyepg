@@ -26,11 +26,10 @@ if [[ -z "${TAG}" ]]; then
   TAG="2.0.1-RC.1"
 fi
 
-TZ=$(cat /etc/timezone)
+TZ=$(cat /etc/timezone &> /dev/null || echo "Europe/Berlin")
 PGID=$(id -g `whoami`)
 PUID=$(id -u `whoami`)
-#CPUS=$(grep -c ^processor /proc/cpuinfo)
-CPUS=4
+CPUS=$(grep -c ^processor /proc/cpuinfo &> /dev/null || sysctl -n hw.ncpu)
 LIMIT=$(echo "${CPUS} * ${CPU_RATIO}" | bc -l)
 COLOR_NOTICE='\e[95m'
 COLOR_ERROR='\e[91m'
