@@ -1,4 +1,4 @@
-FROM __BASE_ARCH__/debian:stretch-slim
+FROM __BASE_ARCH__/debian:stretch-slim AS build
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
@@ -59,3 +59,7 @@ RUN apt-get -qy update \
     && rm -rf ${BUILD_PATHS}
 
 ENTRYPOINT [ "/entrypoint.sh" ]
+
+__CROSS_FROM build
+
+__CROSS_RUN rm -rf /usr/bin/qemu-*
