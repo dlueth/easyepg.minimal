@@ -31,17 +31,11 @@ fi
 TZ=$(cat /etc/timezone &> /dev/null || echo "Europe/Berlin")
 PGID=$(id -g `whoami`)
 PUID=$(id -u `whoami`)
-CPUS=$(getconf _NPROCESSORS_ONLN)
+CPUS=$([ $(uname) = 'Darwin' ] && sysctl -n hw.logicalcpu_max || lscpu -p | egrep -v '^#' | wc -l)
 LIMIT=$(echo "${CPUS} * ${CPU_RATIO}" | bc -l)
 COLOR_NOTICE='\e[95m'
 COLOR_ERROR='\e[91m'
 COLOR_NONE='\e[39m'
-
-getLatestRelease() {
-  curl --silent "https://api.github.com/repos/$1/releases/latest" | \
-    grep '"tag_name":' | \
-    sed -E 's/.*"([^"]+)".*/\1/'
-}
 
 logDefault()
 {
@@ -56,6 +50,12 @@ logNotice()
 logError()
 {
   echo -e "${COLOR_ERROR}$1${COLOR_NONE}" 1>&2
+}
+
+getLatestRelease() {
+  curl --silent "https://api.github.com/repos/$1/releases/latest" | \
+    grep '"tag_name":' | \
+    sed -E 's/.*"([^"]+)".*/\1/'
 }
 
 build()
