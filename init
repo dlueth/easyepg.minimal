@@ -89,6 +89,9 @@ docker rm --force easyepg.admin &> /dev/null
 docker rm --force easyepg.run &> /dev/null
 docker rm --force easyepg.cron &> /dev/null
 
+logNotice "Pulling container (might take a while)..."
+docker pull qoopido/easyepg.minimal:${TAG}
+
 logNotice "Creating container..."
 if [[ ! -z "${SOCKET}" ]]; then
   docker create --name=easyepg.admin --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=admin -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG} &> /dev/null
