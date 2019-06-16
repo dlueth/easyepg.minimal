@@ -52,7 +52,7 @@ USERNAME=$(getent passwd ${PUID} | cut -d: -f1)
 
 case "${MODE}" in
   run)
-    su ${USERNAME} -c "cd /easyepg && ./epg.sh"
+    su ${USERNAME} -c "/process.sh"
     ;;
   cron)
     exec /usr/sbin/cron -f -l 0

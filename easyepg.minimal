@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getopts ":t:m:v:r:" options; do
+while getopts ":t:m:v:s:r:" options; do
   case "${options}" in
     t)
       TAG="${OPTARG}"
@@ -10,6 +10,9 @@ while getopts ":t:m:v:r:" options; do
     ;;
     v)
       VOLUME="${OPTARG}"
+    ;;
+    s)
+      SOCKET="${OPTARG}"
     ;;
     r)
       CPU_RATIO="${OPTARG}"
@@ -137,15 +140,32 @@ publish() {
 create()
 {
   if [[ -z "${VOLUME}" || ! -d "${VOLUME}" || ! -w "${VOLUME}" ]]; then
-    logError "Usage: eemd -m create -v [path to volume]"
+    logError "Usage: easyepg.minimal -m create -v [path to volume]"
     exit 1
   fi
 
+  docker rm --force easyepg.admin
+  docker rm --force easyepg.run
+  docker rm --force easyepg.cron
+
   VOLUME=$(cd ${VOLUME} && pwd -P)
 
-  docker create --name=easyepg.admin --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=admin -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG}
-  docker create --name=easyepg.run --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=run -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG}
-  docker create --name=easyepg.cron --restart unless-stopped --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=cron -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG}
+  if [[ ! -z "${SOCKET}" ]]; then
+    SOCKET=$(cd `dirname ${SOCKET}` && pwd -P)/$(basename ${SOCKET})
+
+    if [[ -z "${SOCKET}" || ! -S "${SOCKET}" ]]; then
+      logError "Usage: easyepg.minimal -m create -v [path to volume] -s [path to socket]"
+      exit 1
+    fi
+
+    docker create --name=easyepg.admin --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=admin -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG}
+    docker create --name=easyepg.run --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=run -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG}
+    docker create --name=easyepg.cron --restart unless-stopped --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=cron -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG}
+  else
+    docker create --name=easyepg.admin --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=admin -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG}
+    docker create --name=easyepg.run --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=run -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG}
+    docker create --name=easyepg.cron --restart unless-stopped --tmpfs /tmp --tmpfs /var/log --cpus ${LIMIT} -e MODE=cron -e PUID=${PUID} -e PGID=${PGID} -e TZ=${TZ} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG}
+  fi
 }
 
 case "${MODE}" in
@@ -159,15 +179,17 @@ case "${MODE}" in
     create
     ;;
   *)
-    logError "Usage: eemd -m [build|publish|create]"
+    logError "Usage: easyepg.minimal -m [build|publish|create]"
     logError "       -t: tag for the image"
     logError "           => used by [build|publish|create], defaults to \"latest\""
     logError "       -v: string containing the path to the volume for the container to use"
     logError "           => required for [create]"
+    logError "       -s: string containing the path to the xmltv.sock for the container to use"
+    logError "           => used by [create], optional"
     logError "       -r: float for the CPU ratio of the container"
     logError "           => used by [create], defaults to 0.5"
     exit 1
     ;;
 esac
 
-exit 0
+exit

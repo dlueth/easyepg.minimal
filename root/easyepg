@@ -1,1 +1,1 @@
-0 2 * * * easyepg cd /easyepg && /bin/bash /easyepg/epg.sh
+0 2 * * * easyepg /process.sh
