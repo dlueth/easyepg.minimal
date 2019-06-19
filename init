@@ -1,118 +1,138 @@
-#!/bin/bash
+#!/bin/sh
 
-COLOR_NOTICE='\e[95m'
-COLOR_ERROR='\e[91m'
-COLOR_NONE='\e[39m'
-
-logDefault()
+log()
 {
-  echo -e "$1"
+  echo "${1}"
 }
 
-logNotice()
-{
-  echo -e "${COLOR_NOTICE}$1${COLOR_NONE}"
-}
-
-logError()
-{
-  echo -e "${COLOR_ERROR}$1${COLOR_NONE}" 1>&2
-}
-
-logNotice "Preparing..."
+log "Preparing..."
 
 GROUP_ID=$(id -g `whoami`)
 USER_ID=$(id -u `whoami`)
 
 DEFAULT_VOLUME=$(cd ~ && pwd -P)"/easyepg"
-DEFAULT_SOCKET=$(find ~/ -name "xmltv.sock" 2> /dev/null)
+DEFAULT_SOCKET=$(find ~/ -type s -name "xmltv.sock" 2> /dev/null)
 DEFAULT_TIMEZONE="Europe/Berlin"
-DEFAULT_CPU_LIMIT=$([[ $(uname) = 'Darwin' ]] && sysctl -n hw.logicalcpu_max || lscpu -p | egrep -v '^#' | wc -l)
 DEFAULT_TAG="latest"
+
+if [ $(uname) = "Darwin" ]; then
+  DEFAULT_CPU_LIMIT=$(sysctl -n hw.logicalcpu_max) 2> /dev/null
+fi
+
+if [ -z "${DEFAULT_CPU_LIMIT}" ] && [ -n "`$(which lscpu)`" ]; then
+  DEFAULT_CPU_LIMIT=$(lscpu -p | egrep -v "^#" | wc -l) 2> /dev/null
+fi
+
+if [ -z "${DEFAULT_CPU_LIMIT}" ] && [ -r "/proc/cpuinfo" ]; then
+  DEFAULT_CPU_LIMIT=$(grep -c ^processor /proc/cpuinfo) 2> /dev/null
+fi
+
+if [ -z "${DEFAULT_CPU_LIMIT}" ] || [ ${DEFAULT_CPU_LIMIT} -eq 0 ]; then
+  DEFAULT_CPU_LIMIT=1
+fi
+
 
 read -p "Storage location [${DEFAULT_VOLUME}]: " VOLUME
 while true; do
-  read -p "Use local xmltv.sock [Y/n]: " yn
-  case $yn in
-    [Nn]*)
-      break
-    ;;
-    *)
-      read -p "Socket location [${DEFAULT_SOCKET}]: " SOCKET
-      break
-    ;;
-  esac
+  if [ -n "${DEFAULT_SOCKET}" ]; then
+    read -p "Use local xmltv.sock [Y/n]: " yn
+
+    case ${yn} in
+      [Nn]*)
+        break
+      ;;
+      *)
+        read -p "Socket location [${DEFAULT_SOCKET}]: " SOCKET
+        break
+      ;;
+    esac
+  else
+    read -p "Use local xmltv.sock [y/N]: " yn
+
+    case ${yn} in
+      [Yy]*)
+        read -p "Socket location [${DEFAULT_SOCKET}]: " SOCKET
+        break
+      ;;
+      *)
+        break
+      ;;
+    esac
+  fi
 done
 read -p "Timezone [${DEFAULT_TIMEZONE}]: " TIMEZONE
 read -p "CPU limit [${DEFAULT_CPU_LIMIT}]: " CPU_LIMIT
-read -p "Minimal easyepg version [${DEFAULT_TAG}]: " TAG
+read -p "Version [${DEFAULT_TAG}]: " TAG
 
-if [[ -z "${VOLUME}" ]]; then
+if [ -z "${VOLUME}" ]; then
   VOLUME=${DEFAULT_VOLUME}
 fi
 
-if [[ -z "${SOCKET}" ]]; then
+if [ -z "${SOCKET}" ]; then
   SOCKET=${DEFAULT_SOCKET}
 fi
 
-if [[ -z "${TIMEZONE}" ]]; then
+if [ -z "${TIMEZONE}" ]; then
   TIMEZONE=${DEFAULT_TIMEZONE}
 fi
 
-if [[ -z "${CPU_LIMIT}" ]]; then
+if [ -z "${CPU_LIMIT}" ]; then
   CPU_LIMIT=${DEFAULT_CPU_LIMIT}
 fi
 
-if [[ -z "${TAG}" ]]; then
+if [ -z "${TAG}" ]; then
   TAG=${DEFAULT_TAG}
 fi
 
+if [ ! -d "${VOLUME}" ]; then
+  mkdir -p ${VOLUME}
+fi
+
+if [ -z "${VOLUME}" ] || [ ! -d "${VOLUME}" ] || [ ! -w "${VOLUME}" ]; then
+  log "Storage location incorrect"
+  exit 1
+fi
+
+if [ ! -z "${SOCKET}" ] && [ ! -S "${SOCKET}" ]; then
+  log "Socket location incorrect"
+  exit 1
+fi
+
+# make paths absolute for docker
 VOLUME=$(cd ${VOLUME} && pwd -P)
 
-if [[ ! -z "${SOCKET}" ]]; then
+if [ ! -z "${SOCKET}" ]; then
   SOCKET=$(cd `dirname ${SOCKET}` && pwd -P)/$(basename ${SOCKET})
 fi
 
-mkdir -p ${VOLUME}
+docker rm --force easyepg.admin > /dev/null 2>&1
+docker rm --force easyepg.run > /dev/null 2>&1
+docker rm --force easyepg.cron > /dev/null 2>&1
 
-if [[ -z "${VOLUME}" || ! -d "${VOLUME}" || ! -w "${VOLUME}" ]]; then
-  logError "Storage location incorrect"
-  exit 1
-fi
-
-if [[ ! -z "${SOCKET}" && ! -S "${SOCKET}" ]]; then
-  logError "Socket location incorrect"
-  exit 1
-fi
-
-docker rm --force easyepg.admin &> /dev/null
-docker rm --force easyepg.run &> /dev/null
-docker rm --force easyepg.cron &> /dev/null
-
-logNotice "Pulling container (might take a while)..."
+log "Pulling container..."
 docker pull qoopido/easyepg.minimal:${TAG}
 
-logNotice "Creating container..."
-if [[ ! -z "${SOCKET}" ]]; then
-  docker create --name=easyepg.admin --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=admin -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG} &> /dev/null
-  logDefault "> easyepg.admin"
+log "Creating container..."
+if [ ! -z "${SOCKET}" ]; then
+  docker create --name=easyepg.admin --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=admin -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG} > /dev/null 2>&1
+  log "> easyepg.admin"
 
-  docker create --name=easyepg.run --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=run -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG} &> /dev/null
-  logDefault "> easyepg.run"
+  docker create --name=easyepg.run --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=run -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG} > /dev/null 2>&1
+  log "> easyepg.run"
 
-  docker create --name=easyepg.cron --restart unless-stopped --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=cron -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG} &> /dev/null
-  logDefault "> easyepg.cron"
+  docker create --name=easyepg.cron --restart unless-stopped --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=cron -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg -v ${SOCKET}:/xmltv.sock qoopido/easyepg.minimal:${TAG} > /dev/null 2>&1
+  log "> easyepg.cron"
 else
-  docker create --name=easyepg.admin --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=admin -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG} &> /dev/null
-  logDefault "> easyepg.admin"
+  docker create --name=easyepg.admin --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=admin -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG} > /dev/null 2>&1
+  log "> easyepg.admin"
 
-  docker create --name=easyepg.run --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=run -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG} &> /dev/null
-  logDefault "> easyepg.run"
+  docker create --name=easyepg.run --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=run -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG} > /dev/null 2>&1
+  log "> easyepg.run"
 
-  docker create --name=easyepg.cron --restart unless-stopped --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=cron -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG} &> /dev/null
-  logDefault "> easyepg.cron"
+  docker create --name=easyepg.cron --restart unless-stopped --tmpfs /tmp --tmpfs /var/log --cpus ${CPU_LIMIT} -e MODE=cron -e PUID=${USER_ID} -e PGID=${GROUP_ID} -e TZ=${TIMEZONE} -v ${VOLUME}:/easyepg qoopido/easyepg.minimal:${TAG} > /dev/null 2>&1
+  log "> easyepg.cron"
 fi
 
-logNotice "Finished!"
+log "Finished!"
 
 exit

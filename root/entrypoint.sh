@@ -41,7 +41,7 @@ if ! grep -q ${PGID} /etc/group; then
   groupadd --gid ${PGID} easyepg
 fi
 
-if ! id -u easyepg &> /dev/null; then
+if ! getent passwd ${PUID}; then
   useradd --uid ${PUID} --gid ${PGID} --home /easyepg --shell /bin/bash easyepg
 fi
 
@@ -55,6 +55,7 @@ case "${MODE}" in
     su ${USERNAME} -c "/process.sh"
     ;;
   cron)
+    crontab -u ${USERNAME} /easyepg.cron
     exec /usr/sbin/cron -f -l 0
     ;;
   *)
