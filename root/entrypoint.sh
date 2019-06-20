@@ -1,20 +1,25 @@
 #!/bin/bash
 set -e
+set -f
 
 if [[ -z "${MODE}" ]]; then
   MODE="run"
 fi
 
-if [[ -z "${TZ}" ]]; then
-  TZ="Europe/Berlin"
+if [[ -z "${TIMEZONE}" ]]; then
+  TIMEZONE="Europe/Berlin"
 fi
 
-if [[ -z "${PGID}" ]]; then
-  PGID="1099"
+if [[ -z "${GROUP_ID}" ]]; then
+  GROUP_ID="1099"
 fi
 
-if [[ -z "${PUID}" ]]; then
-  PUID="1099"
+if [[ -z "${USER_ID}" ]]; then
+  USER_ID="1099"
+fi
+
+if [[ -z "${FREQUENCY}" ]]; then
+  FREQUENCY="0 2 * * *"
 fi
 
 if [[ ! -f /easyepg/epg.sh ]]; then
@@ -34,27 +39,28 @@ else
   cd /
 fi
 
-ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime
+ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata
 
-if ! grep -q ${PGID} /etc/group; then
-  groupadd --gid ${PGID} easyepg
+if ! grep -q ${GROUP_ID} /etc/group; then
+  groupadd --gid ${GROUP_ID} easyepg
 fi
 
-if ! getent passwd ${PUID}; then
-  useradd --uid ${PUID} --gid ${PGID} --home /easyepg --shell /bin/bash easyepg
+if ! getent passwd ${USER_ID}; then
+  useradd --uid ${USER_ID} --gid ${GROUP_ID} --home /easyepg --shell /bin/bash easyepg
 fi
 
-chown -R ${PUID}:${PGID} /easyepg
-chown -R ${PUID}:${PGID} /tmp
+chown -R ${USER_ID}:${GROUP_ID} /easyepg
+chown -R ${USER_ID}:${GROUP_ID} /tmp
 
-USERNAME=$(getent passwd ${PUID} | cut -d: -f1)
+USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
 
 case "${MODE}" in
   run)
     su ${USERNAME} -c "/process.sh"
     ;;
   cron)
+    sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /easyepg.cron
     crontab -u ${USERNAME} /easyepg.cron
     exec /usr/sbin/cron -f -l 0
     ;;
