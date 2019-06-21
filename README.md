@@ -24,8 +24,8 @@ docker exec -ti easyepg.admin /bin/bash
 
 After you successfully switched into the container issue
 ```
-su - easyepg
-./epg.sh
+su - easyepg # skip if you are running the container as root
+cd easyepg && ./epg.sh
 ```
 
 to start easyepg's setup and configure it. When your setup is finished return to the shell and issue `exit` to leave the container followed by `docker stop easyepg.admin` to stop it. 
