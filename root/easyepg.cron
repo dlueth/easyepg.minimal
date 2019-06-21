@@ -1,1 +1,1 @@
-${FREQUENCY} /process.sh
+${FREQUENCY} su ${USERNAME} -c "TERM=xterm /process.sh" > /proc/1/fd/1 2> /proc/1/fd/2

@@ -23,16 +23,10 @@ if [[ -z "${FREQUENCY}" ]]; then
 fi
 
 if [[ ! -f /easyepg/epg.sh ]]; then
-  cd /easyepg
-  git init .
-  git remote add -f origin https://github.com/sunsettrack4/easyepg.git
-  git checkout master
-  git remote set-head origin -a
-  cd /
+  git clone https://github.com/sunsettrack4/easyepg.git /easyepg
+  rm -rf /easyepg/.git /easyepg/.github
 else
   cd /easyepg
-  git checkout -- .
-  git pull
   git clone https://github.com/sunsettrack4/easyepg.git
   ./update.sh
   rm -rf ./easyepg
@@ -57,11 +51,12 @@ USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
 
 case "${MODE}" in
   run)
-    su ${USERNAME} -c "/process.sh"
+    su ${USERNAME} -c "TERM=xterm /process.sh"
     ;;
   cron)
     sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /easyepg.cron
-    crontab -u ${USERNAME} /easyepg.cron
+    sed -i "s/\${USERNAME}/${USERNAME}/" /easyepg.cron
+    crontab -u root /easyepg.cron
     exec /usr/sbin/cron -f -l 0
     ;;
   *)
