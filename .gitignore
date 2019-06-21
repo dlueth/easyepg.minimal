@@ -1,2 +1,5 @@
 .idea
 .DS_Store
+Dockerfile.*
+!Dockerfile.multi
+root/qemu-*
