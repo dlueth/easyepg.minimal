@@ -125,14 +125,19 @@ if [ ! -z "${SOCKET}" ]; then
   SOCKET=$(cd `dirname ${SOCKET}` && pwd -P)/$(basename ${SOCKET})
 fi
 
-docker rm --force easyepg.admin > /dev/null 2>&1
-docker rm --force easyepg.run > /dev/null 2>&1
-docker rm --force easyepg.cron > /dev/null 2>&1
+log "Stopping container..."
+docker ps -a -q --filter ancestor="qoopido/easyepg.minimal" --format="{{.ID}}" | xargs -I {} docker stop {} 2> /dev/null
 
-log "Pulling image..."
+log "Removing old container..."
+docker ps -a -q --filter ancestor="qoopido/easyepg.minimal" --format="{{.ID}}" | xargs -I {} docker rm --force {} 2> /dev/null
+
+log "Removing old image..."
+docker images --format "{{.Repository}}:{{.Tag}}" | grep "qoopido/easyepg.minimal" | xargs -I {} docker rmi --force {} 2> /dev/null
+
+log "Pulling new image..."
 docker pull qoopido/easyepg.minimal:${TAG}
 
-log "Creating container..."
+log "Creating new container..."
 
 OPTIONS="--tmpfs /tmp --tmpfs /var/log -e USER_ID=\"${USER_ID}\" -e GROUP_ID=\"${GROUP_ID}\" -e TIMEZONE=\"${TIMEZONE}\" -e FREQUENCY=\"${FREQUENCY}\" -v ${VOLUME}:/easyepg"
 
