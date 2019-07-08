@@ -26,6 +26,8 @@ DEFAULT_VOLUME=$(cd ~ && pwd -P)"/easyepg"
 DEFAULT_SOCKET=$(find ~/ -type s -name "xmltv.sock" 2> /dev/null)
 DEFAULT_TIMEZONE="Europe/Berlin"
 DEFAULT_FREQUENCY="0 2 * * *"
+DEFAULT_UPDATE="yes"
+DEFAULT_BRANCH="master"
 DEFAULT_TAG="latest"
 
 if [ -z "${NO_CPU_LIMIT}" ]; then
@@ -78,7 +80,24 @@ if [ -n "${DEFAULT_CPU_LIMIT}" ]; then
 fi
 read -p "Timezone [${DEFAULT_TIMEZONE}]: " TIMEZONE
 read -p "Cronjob frequency [${DEFAULT_FREQUENCY}]: " FREQUENCY
-read -p "Version [${DEFAULT_TAG}]: " TAG
+
+while true; do
+  read -p "Autoupdate easyepg [Y/n]: " yn
+
+  case ${yn} in
+    [Nn]*)
+      UPDATE="no"
+      break
+    ;;
+    *)
+      UPDATE="yes"
+      break
+    ;;
+  esac
+done
+
+read -p "Branch of easyepg [${DEFAULT_BRANCH}]: " BRANCH
+read -p "Version of easyepg.minimal [${DEFAULT_TAG}]: " TAG
 
 if [ -z "${VOLUME}" ]; then
   VOLUME=${DEFAULT_VOLUME}
@@ -98,6 +117,14 @@ fi
 
 if [ -z "${FREQUENCY}" ]; then
   FREQUENCY=${DEFAULT_FREQUENCY}
+fi
+
+if [ -z "${UPDATE}" ]; then
+  UPDATE=${DEFAULT_UPDATE}
+fi
+
+if [ -z "${BRANCH}" ]; then
+  BRANCH=${DEFAULT_BRANCH}
 fi
 
 if [ -z "${TAG}" ]; then
@@ -139,7 +166,7 @@ docker pull qoopido/easyepg.minimal:${TAG}
 
 log "Creating new container..."
 
-OPTIONS="--tmpfs /tmp --tmpfs /var/log -e USER_ID=\"${USER_ID}\" -e GROUP_ID=\"${GROUP_ID}\" -e TIMEZONE=\"${TIMEZONE}\" -e FREQUENCY=\"${FREQUENCY}\" -v ${VOLUME}:/easyepg"
+OPTIONS="--tmpfs /tmp --tmpfs /var/log -e USER_ID=\"${USER_ID}\" -e GROUP_ID=\"${GROUP_ID}\" -e TIMEZONE=\"${TIMEZONE}\" -e FREQUENCY=\"${FREQUENCY}\" -e UPDATE=\"${UPDATE}\" -e BRANCH=\"${BRANCH}\" -v ${VOLUME}:/easyepg"
 
 if [ -n "${SOCKET}" ]; then
   OPTIONS="${OPTIONS} -v ${SOCKET}:/xmltv.sock"

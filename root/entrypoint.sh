@@ -22,15 +22,27 @@ if [[ -z "${FREQUENCY}" ]]; then
   FREQUENCY="0 2 * * *"
 fi
 
+if [[ -z "${UPDATE}" ]]; then
+  UPDATE="yes"
+fi
+
+if [[ -z "${BRANCH}" ]]; then
+  BRANCH="master"
+fi
+
 if [[ ! -f /easyepg/epg.sh ]]; then
   git clone https://github.com/sunsettrack4/easyepg.git /easyepg
+  git checkout ${BRANCH}
   rm -rf /easyepg/.git /easyepg/.github
 else
-  cd /easyepg
-  git clone https://github.com/sunsettrack4/easyepg.git
-  ./update.sh
-  rm -rf ./easyepg
-  cd /
+  if [[ "${UPDATE}" = "yes" ]]; then
+    cd /easyepg
+    git clone https://github.com/sunsettrack4/easyepg.git
+    git checkout ${BRANCH}
+    ./update.sh
+    rm -rf ./easyepg
+    cd /
+  fi
 fi
 
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
