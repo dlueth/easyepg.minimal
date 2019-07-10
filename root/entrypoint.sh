@@ -37,6 +37,7 @@ if [[ ! -f /easyepg/epg.sh ]]; then
 else
   if [[ "${UPDATE}" = "yes" ]]; then
     cd /easyepg
+    rm -rf ./easyepg
     git clone https://github.com/sunsettrack4/easyepg.git
     git checkout ${BRANCH}
     ./update.sh

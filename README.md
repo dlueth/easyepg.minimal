@@ -10,7 +10,7 @@ You will need to have `docker` installed on your system and the user you want to
 ## Installation
 Switch to the user you want to run the container with and issue the following command to get everything up and running
 ```
-sh -c "$(curl -s https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/init)"
+sh -c "$(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/init)"
 ```
 
 > **Note:** The image is a multi-arch build providing variants for amd64, arm32v7 and arm64v8 - the correct variant for your architecture should<sup>TM</sup> be pulled automatically.
