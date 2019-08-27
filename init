@@ -27,6 +27,7 @@ DEFAULT_SOCKET=$(find ~/ -type s -name "xmltv.sock" 2> /dev/null)
 DEFAULT_TIMEZONE="Europe/Berlin"
 DEFAULT_FREQUENCY="0 2 * * *"
 DEFAULT_UPDATE="yes"
+DEFAULT_REPO="sunsettrack4"
 DEFAULT_BRANCH="master"
 DEFAULT_TAG="latest"
 
@@ -96,8 +97,9 @@ while true; do
   esac
 done
 
-read -p "Branch of easyepg [${DEFAULT_BRANCH}]: " BRANCH
-read -p "Version of easyepg.minimal [${DEFAULT_TAG}]: " TAG
+read -p "Easyepg git repo [${DEFAULT_REPO}]: " REPO
+read -p "Easyepg git branch [${DEFAULT_BRANCH}]: " BRANCH
+read -p "Easyepg.minimal docker tag [${DEFAULT_TAG}]: " TAG
 
 if [ -z "${VOLUME}" ]; then
   VOLUME=${DEFAULT_VOLUME}
@@ -121,6 +123,10 @@ fi
 
 if [ -z "${UPDATE}" ]; then
   UPDATE=${DEFAULT_UPDATE}
+fi
+
+if [ -z "${REPO}" ]; then
+  REPO=${DEFAULT_REPO}
 fi
 
 if [ -z "${BRANCH}" ]; then
@@ -166,7 +172,7 @@ docker pull qoopido/easyepg.minimal:${TAG}
 
 log "Creating new container..."
 
-OPTIONS="--tmpfs /tmp --tmpfs /var/log -e USER_ID=\"${USER_ID}\" -e GROUP_ID=\"${GROUP_ID}\" -e TIMEZONE=\"${TIMEZONE}\" -e FREQUENCY=\"${FREQUENCY}\" -e UPDATE=\"${UPDATE}\" -e BRANCH=\"${BRANCH}\" -v ${VOLUME}:/easyepg"
+OPTIONS="--tmpfs /tmp --tmpfs /var/log -e USER_ID=\"${USER_ID}\" -e GROUP_ID=\"${GROUP_ID}\" -e TIMEZONE=\"${TIMEZONE}\" -e FREQUENCY=\"${FREQUENCY}\" -e UPDATE=\"${UPDATE}\" -e REPO=\"${REPO}\" -e BRANCH=\"${BRANCH}\" -v ${VOLUME}:/easyepg"
 
 if [ -n "${SOCKET}" ]; then
   OPTIONS="${OPTIONS} -v ${SOCKET}:/xmltv.sock"

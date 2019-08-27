@@ -26,19 +26,23 @@ if [[ -z "${UPDATE}" ]]; then
   UPDATE="yes"
 fi
 
+if [[ -z "${REPO}" ]]; then
+  REPO="sunsettrack4"
+fi
+
 if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
 if [[ ! -f /easyepg/epg.sh ]]; then
-  git clone https://github.com/sunsettrack4/easyepg.git /easyepg
+  git clone https://github.com/${REPO}/easyepg.git /easyepg
   git checkout ${BRANCH}
   rm -rf /easyepg/.git /easyepg/.github
 else
   if [[ "${UPDATE}" = "yes" ]]; then
     cd /easyepg
     rm -rf ./easyepg
-    git clone https://github.com/sunsettrack4/easyepg.git
+    git clone https://github.com/${REPO}/easyepg.git
     git checkout ${BRANCH}
     ./update.sh
     rm -rf ./easyepg
