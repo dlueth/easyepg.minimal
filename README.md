@@ -5,7 +5,7 @@
 A minimal docker container for running easyepg either on demand or permanently with built-in cronjob
 
 ## Manual installation via shell
-> This section is not for users with a GUI interface for docker on a NAS system like Synology, UnRaid or OpenMediaVault but for people having a dedicated host running TVheadend directly but wanting to run easyepg as docker on this host. 
+> This section is not for users with a GUI interface for docker on a NAS system like Synology, UnRaid or OpenMediaVault (see [here](#technical-info-for-docker-guis-eg-synology-unraid-openmediavault) for details) but for people having a dedicated host running TVheadend directly but wanting to run easyepg as docker on this host. 
 
 ### Prerequisites
 You will need to have `docker` installed on your system and the user you want to run it needs to be in the `docker` group.
