@@ -36,17 +36,19 @@ fi
 
 if [[ ! -f /easyepg/epg.sh ]]; then
   git clone https://github.com/${REPO}/easyepg.git /easyepg
+  cd /easyepg
   git checkout ${BRANCH}
+  cd /
   rm -rf /easyepg/.git /easyepg/.github
 else
   if [[ "${UPDATE}" = "yes" ]]; then
-    cd /easyepg
-    rm -rf ./easyepg
-    git clone https://github.com/${REPO}/easyepg.git
+    git clone https://github.com/${REPO}/easyepg.git /easyepg/easyepg
+    cd /easyepg/easyepg
     git checkout ${BRANCH}
-    ./update.sh
-    rm -rf ./easyepg
+    cd /easyepg
+    /bin/bash ./update.sh
     cd /
+    rm -rf /easyepg/easyepg
   fi
 fi
 

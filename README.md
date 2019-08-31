@@ -84,7 +84,6 @@ docker run \
   --restart unless-stopped \
   --tmpfs /tmp \
   --tmpfs /var/log \
-  --rm \
   qoopido/easyepg.minimal:latest
 ```
 

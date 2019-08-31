@@ -4,16 +4,23 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
       org.label-schema.name="easyepg.minimal"
 
-ENV DEBIAN_FRONTEND="noninteractive" \
-    TERM=xterm \
-    LANGUAGE="en_US.UTF-8" \
-    LANG="en_US.UTF-8" \
-    LC_ALL="en_US.UTF-8" \
-    BUILD_PATHS="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm" \
-    BUILD_DEPENDENCIES="build-essential cpanminus" \
-    DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping"
+ARG DEBIAN_FRONTEND="noninteractive"
+ARG TERM=xterm
+ARG LANGUAGE="en_US.UTF-8"
+ARG LANG="en_US.UTF-8"
+ARG LC_ALL="en_US.UTF-8"
+ARG BUILD_PATHS="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm"
+ARG BUILD_DEPENDENCIES="build-essential cpanminus"
+ARG DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping"
 
-# ~/.cpan/build/* ~/.cpan/sources/authors/id ~/.cpan/cpan_sqlite_log.* ~/.cpan/FTPstats.yml
+ENV MODE="run" \
+    USER_ID="1099" \
+    GROUP_ID="1099" \
+    TIMEZONE="Europe/Berlin" \
+    FREQUENCY="0 2 * * *" \
+    UPDATE="yes" \
+    REPO="sunsettrack4" \
+    BRANCH="master"
 
 __CROSS_COPY root/qemu-__QEMU_ARCH__-static /usr/bin/
 COPY root/entrypoint.sh /entrypoint.sh
@@ -64,6 +71,8 @@ RUN apt-get -qy update \
     && rm -rf ${BUILD_PATHS}
 
 ENTRYPOINT [ "/entrypoint.sh" ]
+
+VOLUME /easyepg
 
 __CROSS_FROM build
 
