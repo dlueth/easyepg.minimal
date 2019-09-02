@@ -24,7 +24,7 @@ sh -c "$(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/
 Switch to the user you want to run the container with and start the admin container and enter it via
 ```
 docker start easyepg.admin
-docker exec -ti -u easyepg -w /easyepg easyepg.admin ./epg.sh
+docker exec -ti -u easyepg -w /easyepg easyepg.admin /bin/bash ./epg.sh
 ```
 
 to start easyepg's setup and configure it. When your setup is finished return to the shell and issue `exit` to leave the container followed by `docker stop easyepg.admin` to stop it.
