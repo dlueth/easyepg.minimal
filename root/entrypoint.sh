@@ -34,22 +34,26 @@ if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
-if [[ ! -f /easyepg/epg.sh ]]; then
-  git clone https://github.com/${REPO}/easyepg.git /easyepg
-  cd /easyepg
-  git checkout ${BRANCH}
-  cd /
-  rm -rf /easyepg/.git /easyepg/.github
-else
-  if [[ "${UPDATE}" = "yes" ]]; then
-    git clone https://github.com/${REPO}/easyepg.git /easyepg/easyepg
+git clone https://github.com/sunsettrack4/easyepg.git /easyepg/easyepg
+
+updateEasyepg()
+{
+  rm -rf /easyepg/easyepg
+  git clone https://github.com/${REPO}/easyepg.git /easyepg/easyepg
+
+  if [[ "${BRANCH}" != "master" ]]; then
     cd /easyepg/easyepg
     git checkout ${BRANCH}
-    cd /easyepg
-    /bin/bash ./update.sh
-    cd /
-    rm -rf /easyepg/easyepg
   fi
+
+  cd /easyepg
+  /bin/bash ./easyepg/update.sh
+  cd /
+  rm -rf /easyepg/easyepg
+}
+
+if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
+    updateEasyepg
 fi
 
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
