@@ -34,8 +34,6 @@ if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
-git clone https://github.com/sunsettrack4/easyepg.git /easyepg/easyepg
-
 updateEasyepg()
 {
   rm -rf /easyepg/easyepg

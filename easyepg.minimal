@@ -1,9 +1,12 @@
 #!/bin/bash
 
-while getopts ":t:m:" options; do
+while getopts ":t:m:n:" options; do
   case "${options}" in
     t)
       TAG="${OPTARG}"
+    ;;
+    n)
+      TAGNEW="${OPTARG}"
     ;;
     m)
       MODE="${OPTARG}"
@@ -13,6 +16,10 @@ done
 
 if [[ -z "${TAG}" ]]; then
   TAG="latest"
+fi
+
+if [[ -z "${TAGNEW}" ]]; then
+  TAGNEW="latest"
 fi
 
 COLOR_NOTICE='\e[95m'
@@ -94,6 +101,14 @@ build()
   done
 }
 
+tag() {
+  for DOCKER_ARCH in amd64 arm32v7 arm64v8; do
+    docker tag qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH} qoopido/easyepg.minimal:${TAGNEW}-${DOCKER_ARCH}
+
+    logDefault "> tagged qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH} as tagged qoopido/easyepg.minimal:${TAGNEW}-${DOCKER_ARCH}"
+  done
+}
+
 publish() {
   logNotice "Publishing images"
 
@@ -123,16 +138,18 @@ case "${MODE}" in
   build)
     build
     ;;
+  tag)
+    tag
+    ;;
   publish)
     publish
     ;;
-  create)
-    create
-    ;;
   *)
-    logError "Usage: easyepg.minimal -m [build|publish]"
+    logError "Usage: easyepg.minimal -m [build|tag|publish]"
     logError "       -t: tag for the image"
-    logError "           => used by [build|publish], defaults to \"latest\""
+    logError "           => used by [build|tag|publish], defaults to \"latest\""
+    logError "       -n: new tag for the image"
+    logError "           => used by [tag], defaults to \"latest\""
     exit 1
     ;;
 esac
