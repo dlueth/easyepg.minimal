@@ -11,7 +11,7 @@ ARG LANG="en_US.UTF-8"
 ARG LC_ALL="en_US.UTF-8"
 ARG BUILD_PATHS="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm"
 ARG BUILD_DEPENDENCIES="build-essential cpanminus"
-ARG DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping"
+ARG DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl file wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping"
 
 ENV MODE="run" \
     USER_ID="1099" \

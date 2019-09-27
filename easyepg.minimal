@@ -105,7 +105,7 @@ tag() {
   for DOCKER_ARCH in amd64 arm32v7 arm64v8; do
     docker tag qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH} qoopido/easyepg.minimal:${TAGNEW}-${DOCKER_ARCH}
 
-    logDefault "> tagged qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH} as tagged qoopido/easyepg.minimal:${TAGNEW}-${DOCKER_ARCH}"
+    logDefault "> tagged qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH} as qoopido/easyepg.minimal:${TAGNEW}-${DOCKER_ARCH}"
   done
 }
 
