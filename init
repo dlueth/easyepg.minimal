@@ -85,7 +85,7 @@ read -p "Cronjob frequency [${DEFAULT_FREQUENCY}]: " FREQUENCY
 read -p "Easyepg git repo [${DEFAULT_REPO}]: " REPO
 read -p "Easyepg git branch [${DEFAULT_BRANCH}]: " BRANCH
 
-if [ -z "${BRANCH}" ] || [ "${BRANCH}" == "master" ]; then
+if [ -z "${BRANCH}" ] || [ "${BRANCH}" = "master" ]; then
   DEFAULT_UPDATE="yes"
 
   while true; do
