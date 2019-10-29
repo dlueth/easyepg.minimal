@@ -26,7 +26,7 @@ DEFAULT_VOLUME=$(cd ~ && pwd -P)"/easyepg"
 DEFAULT_SOCKET=$(find ~/ -type s -name "xmltv.sock" 2> /dev/null)
 DEFAULT_TIMEZONE="Europe/Berlin"
 DEFAULT_FREQUENCY="0 2 * * *"
-DEFAULT_UPDATE="yes"
+DEFAULT_UPDATE="no"
 DEFAULT_REPO="sunsettrack4"
 DEFAULT_BRANCH="master"
 DEFAULT_TAG="latest"
@@ -82,23 +82,28 @@ fi
 read -p "Timezone [${DEFAULT_TIMEZONE}]: " TIMEZONE
 read -p "Cronjob frequency [${DEFAULT_FREQUENCY}]: " FREQUENCY
 
-while true; do
-  read -p "Autoupdate easyepg [Y/n]: " yn
-
-  case ${yn} in
-    [Nn]*)
-      UPDATE="no"
-      break
-    ;;
-    *)
-      UPDATE="yes"
-      break
-    ;;
-  esac
-done
-
 read -p "Easyepg git repo [${DEFAULT_REPO}]: " REPO
 read -p "Easyepg git branch [${DEFAULT_BRANCH}]: " BRANCH
+
+if [ -z "${BRANCH}" ] || [ "${BRANCH}" == "master" ]; then
+  DEFAULT_UPDATE="yes"
+
+  while true; do
+    read -p "Autoupdate easyepg [Y/n]: " yn
+
+    case ${yn} in
+      [Nn]*)
+        UPDATE="no"
+        break
+      ;;
+      *)
+        UPDATE="yes"
+        break
+      ;;
+    esac
+  done
+fi
+
 read -p "Easyepg.minimal docker tag [${DEFAULT_TAG}]: " TAG
 
 if [ -z "${VOLUME}" ]; then
