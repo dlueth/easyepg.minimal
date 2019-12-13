@@ -1,14 +1,14 @@
 name: Docker Image CI
 on: [push]
 jobs:
-  amd64:
-    runs-on: ubuntu-18.04
-    env:
-      TAG: latest
-    steps:
-    - uses: actions/checkout@v1
-    - name: Build amd64
-      run: docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:amd64-${TAG} -f Dockerfile.amd64 .
+#  amd64:
+#    runs-on: ubuntu-18.04
+#    env:
+#      TAG: latest
+#    steps:
+#    - uses: actions/checkout@v1
+#    - name: Build amd64
+#      run: docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:amd64-${TAG} -f Dockerfile.amd64 .
   arm32v7:
     runs-on: ubuntu-18.04
     env:
@@ -21,30 +21,28 @@ jobs:
           architecture: armv7
           distribution: ubuntu18.04
           run: |
+            sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=armhf] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            sudo apt-get update
+            sudo apt-get install docker-ce docker-ce-cli containerd.io
             echo ::set-output name=id::$(docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm32v7-${TAG} -f Dockerfile.amd64 .)
       - name: Build arm32v7
         run: |
           echo "Container ID is ${{ steps.arm32v7.outputs.id }}"
-  arm64v8:
-    runs-on: ubuntu-18.04
-    env:
-      TAG: latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: uraimo/run-on-arch-action@v1.0.6
-        id: arm64v8
-        with:
-          architecture: aarch64
-          distribution: ubuntu18.04
-          run: |
-            echo ::set-output name=id::$(docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm64v8-${TAG} -f Dockerfile.amd64 .)
-      - name: Build arm64v8
-        run: |
-          echo "Container ID is ${{ steps.arm32v7.outputs.id }}"
-
-    #- name: Build arm32v7
-    #  run: docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm32v7-${TAG} -f Dockerfile.arm32v7 .
-    #- name: Build arm64v8
-    #  run: docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm64v8-${TAG} -f Dockerfile.arm64v8 .
-    # - name: Build the Docker image
-    # run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+#  arm64v8:
+#    runs-on: ubuntu-18.04
+#    env:
+#      TAG: latest
+#    steps:
+#      - uses: actions/checkout@v1
+#      - uses: uraimo/run-on-arch-action@v1.0.6
+#        id: arm64v8
+#        with:
+#          architecture: aarch64
+#          distribution: ubuntu18.04
+#          run: |
+#            echo ::set-output name=id::$(docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm64v8-${TAG} -f Dockerfile.amd64 .)
+#      - name: Build arm64v8
+#        run: |
+#          echo "Container ID is ${{ steps.arm32v7.outputs.id }}"
