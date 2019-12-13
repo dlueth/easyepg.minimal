@@ -18,8 +18,11 @@ jobs:
         with:
           architecture: armv7
           distribution: ubuntu18.04
-          run: docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm32v7-${TAG} -f Dockerfile.amd64 .
+          run: |
+            echo ::set-output name=id::$(docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm32v7-${TAG} -f Dockerfile.amd64 .)
       - name: Build arm32v7
+        run: |
+          echo "Container ID is ${{ steps.arm32v7.outputs.id }}"
   arm64v8:
     runs-on: ubuntu-18.04
     steps:
@@ -29,8 +32,11 @@ jobs:
         with:
           architecture: aarch64
           distribution: ubuntu18.04
-          run: docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm64v8-${TAG} -f Dockerfile.amd64 .
+          run: |
+            echo ::set-output name=id::$(docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm64v8-${TAG} -f Dockerfile.amd64 .)
       - name: Build arm64v8
+        run: |
+          echo "Container ID is ${{ steps.arm32v7.outputs.id }}"
 
     #- name: Build arm32v7
     #  run: docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm32v7-${TAG} -f Dockerfile.arm32v7 .
