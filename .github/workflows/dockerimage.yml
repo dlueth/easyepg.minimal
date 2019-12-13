@@ -11,6 +11,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Preparation
-      run: curl -sL https://github.com/multiarch/qemu-user-static/releases/download/v4.1.1-1/x86_64_qemu-x86_64-static && ls -la
+      run: |
+        curl -sL -o ./root/x86_64_qemu-x86_64-static https://github.com/multiarch/qemu-user-static/releases/download/v4.1.1-1/x86_64_qemu-x86_64-static
+        ls -la ./root
     # - name: Build the Docker image
     # run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
