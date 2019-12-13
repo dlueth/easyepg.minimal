@@ -22,7 +22,6 @@ ENV MODE="run" \
     REPO="sunsettrack4" \
     BRANCH="master"
 
-COPY root/qemu-arm-static /usr/bin/
 COPY root/entrypoint.sh /entrypoint.sh
 COPY root/process.sh /process.sh
 COPY root/easyepg.cron /easyepg.cron
@@ -73,7 +72,3 @@ RUN apt-get -qy update \
 ENTRYPOINT [ "/entrypoint.sh" ]
 
 VOLUME /easyepg
-
-FROM build
-
-RUN rm -rf /usr/bin/qemu-*
