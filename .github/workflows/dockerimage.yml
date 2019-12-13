@@ -18,8 +18,8 @@ jobs:
         curl -sL -o ./root/qemu-x86_64-static https://github.com/multiarch/qemu-user-static/releases/download/v${QEMU_VERSION}/x86_64_qemu-x86_64-static
         curl -sL -o ./root/qemu-arm-static https://github.com/multiarch/qemu-user-static/releases/download/v${QEMU_VERSION}/x86_64_qemu-arm-static
         curl -sL -o ./root/qemu-aarch64-static https://github.com/multiarch/qemu-user-static/releases/download/v${QEMU_VERSION}/x86_64_qemu-aarch64-static
-        docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:amd64-${TAG} -f Dockerfile.amd64 .
-        docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:arm32v7-${TAG} -f Dockerfile.arm32v7 .
-        docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:arm64v8-${TAG} -f Dockerfile.arm64v8 .
+        docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:amd64-${TAG} -f Dockerfile.amd64 .
+        docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm32v7-${TAG} -f Dockerfile.arm32v7 .
+        docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm64v8-${TAG} -f Dockerfile.arm64v8 .
     # - name: Build the Docker image
     # run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
