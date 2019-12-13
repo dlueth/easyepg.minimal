@@ -1,16 +1,18 @@
 name: Docker Image CI
 on: [push]
 jobs:
-  env:
-    TAG: latest
   amd64:
     runs-on: ubuntu-18.04
+    env:
+      TAG: latest
     steps:
     - uses: actions/checkout@v1
     - name: Build amd64
       run: docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:amd64-${TAG} -f Dockerfile.amd64 .
   arm32v7:
     runs-on: ubuntu-18.04
+    env:
+      TAG: latest
     steps:
       - uses: actions/checkout@v1
       - uses: uraimo/run-on-arch-action@v1.0.6
@@ -25,6 +27,8 @@ jobs:
           echo "Container ID is ${{ steps.arm32v7.outputs.id }}"
   arm64v8:
     runs-on: ubuntu-18.04
+    env:
+      TAG: latest
     steps:
       - uses: actions/checkout@v1
       - uses: uraimo/run-on-arch-action@v1.0.6
