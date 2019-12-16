@@ -13,6 +13,7 @@ jobs:
       - name: Preparation
         run: |
           pwd
+          mkdir -p /home/runner/.docker
           ls -la /home/runner
           ls -la /home/runner/work
           # update packages & install requirements
