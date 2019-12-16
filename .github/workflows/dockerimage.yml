@@ -19,6 +19,7 @@ jobs:
           # enable Dockers expermiental features for squash/manifest support
           DIRECTORY=$(pwd)
           export DOCKER_CONFIG=${DIRECTORY}/.docker/
+          echo cat ./.docker/config.json | jq '.' | sudo sponge /etc/docker/daemon.json
           sudo service docker restart
           docker version
       - name: Build amd64
