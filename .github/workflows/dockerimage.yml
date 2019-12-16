@@ -15,8 +15,8 @@ jobs:
       - name: Preparation
         run: |
           # update packages & install requirements
-            #sudo apt-get -qy update
-            #sudo apt-get -qy install qemu-user-static binfmt-support moreutils
+            sudo apt-get -qy update
+            sudo apt-get -qy install qemu-user-static binfmt-support moreutils
           # copy qemu for use via Dockerfile
             #cp /usr/bin/qemu-arm-static ./root
             #cp /usr/bin/qemu-aarch64-static ./root
