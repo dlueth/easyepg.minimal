@@ -21,7 +21,8 @@ jobs:
           # enable Dockers experimental features for squash/manifest support
           mkdir -p /home/runner/.docker
           touch /home/runner/.docker/config.json
-          echo "$(cat /home/runner/.docker/config.json) cat ./.docker/config.json" | jq -s add | sudo sponge /home/runner/.docker/config.json
+          jq -s '.[0] * .[1]' /home/runner/.docker/config.json ./.docker/config.json | sudo sponge /home/runner/.docker/config.json
+          # echo "$(cat /home/runner/.docker/config.json) cat ./.docker/config.json" | jq -s add | sudo sponge /home/runner/.docker/config.json
           sudo service docker restart
           docker version
           # /home/runner/.docker/config.json
