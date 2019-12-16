@@ -28,6 +28,7 @@ jobs:
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             # but this is required anyway
             sudo service docker restart
+            docker version
       #- name: Build amd64
       #  run: |
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
@@ -39,6 +40,7 @@ jobs:
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
       - name: Create manifest
         run: |
+          docker version
           docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
           docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
           docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
