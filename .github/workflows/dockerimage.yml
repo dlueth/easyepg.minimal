@@ -18,14 +18,16 @@ jobs:
         id: arm32v7
       - name: Preparation
         run: |
+          PWD=$(pwd)
+          echo ${PWD}
+          export DOCKER_CONFIG=${PWD}/.docker/
           sudo apt-get -qy update
           sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
           cp /usr/bin/qemu-arm-static ./root
           cp /usr/bin/qemu-aarch64-static ./root
           echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
           sudo service docker restart
-          ls -la ~/
-          ls -la ~/.docker
+          docker version
       #- name: Build amd64
       #  run: |
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
