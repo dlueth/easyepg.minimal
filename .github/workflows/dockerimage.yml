@@ -14,16 +14,27 @@ jobs:
         run: |
           # update packages & install requirements
           sudo apt-get -qy update
+          sudo apt-get -qy dist-upgrade
           sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
+          # update pip packages
+          sudo pip install --upgrade pip
+          sudo sh -c "pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U"
           # copy qemu for use via Dockerfile
           cp /usr/bin/qemu-arm-static ./root
           cp /usr/bin/qemu-aarch64-static ./root
           # enable Dockers experimental features for squash/manifest support
-          sudo mkdir -p /home/runner/.docker
-          sudo cp ./.docker/config.json /home/runner/.docker/config.json
+          WORKING_DIRECTORY=$(pwd)
+          export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
+          sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
+          cat sponge /etc/docker/daemon.json
+          sudo service docker restart
+          docker version
+
+          # sudo mkdir -p /home/runner/.docker
+          # sudo cp ./.docker/config.json /home/runner/.docker/config.json
+          # sudo service docker restart
           # echo "" > /home/runner/.docker/config.json
           # echo "$(cat /home/runner/.docker/config.json) {\"experimental\": \"enabled\"}" | jq -s add | sudo sponge /home/runner/.docker/config.json
-          sudo service docker restart
           # docker version
           # /home/runner/.docker/config.json
           # WORKING_DIRECTORY=$(pwd)
