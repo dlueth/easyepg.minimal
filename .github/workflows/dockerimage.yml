@@ -16,7 +16,7 @@ jobs:
         run: |
           # update packages & install requirements
           sudo apt-get -qy update
-          sudo apt-get -qy dist-upgrade
+          # sudo apt-get -qy dist-upgrade
           sudo apt-get -qy install qemu-user-static binfmt-support moreutils
           # --no-install-recommends
           # copy qemu for use via Dockerfile
@@ -26,7 +26,7 @@ jobs:
           WORKING_DIRECTORY=$(pwd)
           export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
           sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
-          cat sponge /etc/docker/daemon.json
+          cat /etc/docker/daemon.json
           sudo service docker restart
           docker version
 
