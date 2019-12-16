@@ -18,9 +18,7 @@ jobs:
         id: arm32v7
       - name: Preparation
         run: |
-          PWD=$(pwd)
-          echo ${PWD}
-          export DOCKER_CONFIG=${PWD}/.docker/
+          export DOCKER_CONFIG=${HOME}/.docker/
           sudo apt-get -qy update
           sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
           cp /usr/bin/qemu-arm-static ./root
@@ -28,18 +26,18 @@ jobs:
           echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
           sudo service docker restart
           docker version
-      #- name: Build amd64
-      #  run: |
-      #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
-      #- name: Build arm32v7
-      #  run: |
-      #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
-      #- name: Build arm64v8
-      #  run: |
-      #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
-      #- name: Create manifest
-      #  run: |
-      #    docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
-      #    docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
-      #    docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
+      - name: Build amd64
+        run: |
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
+      - name: Build arm32v7
+        run: |
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
+      - name: Build arm64v8
+        run: |
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
+      - name: Create manifest
+        run: |
+          docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
+          docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
+          docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
           # docker manifest push qoopido/easyepg.minimal:${TAG} --purge
