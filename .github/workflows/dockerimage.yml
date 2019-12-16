@@ -15,48 +15,32 @@ jobs:
       - name: Preparation
         run: |
           # update packages & install requirements
-          sudo apt-get -qy update
-          # sudo apt-get -qy dist-upgrade
-          sudo apt-get -qy install qemu-user-static binfmt-support moreutils
-          # --no-install-recommends
+            sudo apt-get -qy update
+            sudo apt-get -qy install qemu-user-static binfmt-support moreutils
           # copy qemu for use via Dockerfile
-          cp /usr/bin/qemu-arm-static ./root
-          cp /usr/bin/qemu-aarch64-static ./root
+            cp /usr/bin/qemu-arm-static ./root
+            cp /usr/bin/qemu-aarch64-static ./root
           # enable Dockers experimental features for squash/manifest support
-          WORKING_DIRECTORY=$(pwd)
-          export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
-          sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
-          cat /etc/docker/daemon.json
-          sudo service docker restart
-          docker version
-
-          # sudo mkdir -p /home/runner/.docker
-          # sudo cp ./.docker/config.json /home/runner/.docker/config.json
-          # sudo service docker restart
-          # echo "" > /home/runner/.docker/config.json
-          # echo "$(cat /home/runner/.docker/config.json) {\"experimental\": \"enabled\"}" | jq -s add | sudo sponge /home/runner/.docker/config.json
-          # docker version
-          # /home/runner/.docker/config.json
-          # WORKING_DIRECTORY=$(pwd)
-          # echo ${WORKING_DIRECTORY}
-          # export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
-          # echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
-          # echo "$(cat /home/runner/.docker/config.json) {\"experimental\": true}" | jq -s add | sudo sponge /home/runner/.docker/config.json
-          # sudo service docker restart
-          # docker version
-          # echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
-      #- name: Build amd64
-      #  run: |
-      #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
+            # this should normally be sufficient...
+            WORKING_DIRECTORY=$(pwd)
+            export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
+            # ... but this is additionally required for squash to work - no idea why though :(
+            sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
+            # but this is required anyway
+            sudo service docker restart
+      - name: Build amd64
+        run: |
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
       - name: Build arm32v7
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
-      #- name: Build arm64v8
-      #  run: |
-      #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
-      #- name: Create manifest
-      #  run: |
-      #    docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
-      #    docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
-      #    docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
+      - name: Build arm64v8
+        run: |
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
+      - name: Create manifest
+        run: |
+          docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
+          docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
+          docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
+          # echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
           # docker manifest push qoopido/easyepg.minimal:${TAG} --purge
