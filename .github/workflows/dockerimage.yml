@@ -1,24 +1,24 @@
 name: Docker Image CI
 on: [push]
+env:
+  TAG: latest
+  DEBIAN_FRONTEND: noninteractive
+  DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+  DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
 jobs:
-  arm32v7:
+  main:
+    name: Main
     runs-on: ubuntu-18.04
-    env:
-      TAG: latest
-      DEBIAN_FRONTEND: noninteractive
-      DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
-      DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v1
       - name: Preparation
         run: |
           # update packages & install requirements
           sudo apt-get -qy update
           sudo apt-get -qy dist-upgrade
-          sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
-          # update pip packages
-          sudo pip install --upgrade pip
-          sudo sh -c "pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U"
+          sudo apt-get -qy install qemu-user-static binfmt-support moreutils
+          # --no-install-recommends
           # copy qemu for use via Dockerfile
           cp /usr/bin/qemu-arm-static ./root
           cp /usr/bin/qemu-aarch64-static ./root
