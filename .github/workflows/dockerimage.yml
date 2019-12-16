@@ -10,7 +10,6 @@ jobs:
       DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
     steps:
       - uses: actions/checkout@v1
-        id: arm32v7
       - name: Preparation
         run: |
           # update packages & install requirements
@@ -21,9 +20,9 @@ jobs:
           cp /usr/bin/qemu-aarch64-static ./root
           # enable Dockers experimental features for squash/manifest support
           sudo mkdir -p /home/runner/.docker
-          sudo touch /home/runner/.docker/config.json
-          jq -s . /home/runner/.docker/config.json ./.docker/config.json | sudo sponge /home/runner/.docker/config.json
-          # echo "$(cat /home/runner/.docker/config.json) cat ./.docker/config.json" | jq -s add | sudo sponge /home/runner/.docker/config.json
+          sudo cp ./.docker/config.json /home/runner/.docker/config.json
+          # echo "" > /home/runner/.docker/config.json
+          # echo "$(cat /home/runner/.docker/config.json) {\"experimental\": \"enabled\"}" | jq -s add | sudo sponge /home/runner/.docker/config.json
           sudo service docker restart
           docker version
           # /home/runner/.docker/config.json
