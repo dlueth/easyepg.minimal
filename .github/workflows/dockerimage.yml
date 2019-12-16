@@ -23,7 +23,7 @@ jobs:
           export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
           echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
           sudo service docker restart
-          docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_TOKEN}
+          echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
       #- name: Build amd64
       #  run: |
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
