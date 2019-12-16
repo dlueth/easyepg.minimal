@@ -18,7 +18,6 @@ jobs:
         id: arm32v7
       - name: Build arm32v7
         run: |
-          apt-get -qy update
           apt-get -qy --no-install-recommends install qemu-user-static binfmt-support
           update-binfmts --enable qemu-arm
           update-binfmts --display qemu-arm
