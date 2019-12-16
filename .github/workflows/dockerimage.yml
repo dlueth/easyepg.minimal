@@ -24,7 +24,7 @@ jobs:
           # echo "" > /home/runner/.docker/config.json
           # echo "$(cat /home/runner/.docker/config.json) {\"experimental\": \"enabled\"}" | jq -s add | sudo sponge /home/runner/.docker/config.json
           sudo service docker restart
-          docker version
+          # docker version
           # /home/runner/.docker/config.json
           # WORKING_DIRECTORY=$(pwd)
           # echo ${WORKING_DIRECTORY}
@@ -37,9 +37,9 @@ jobs:
       #- name: Build amd64
       #  run: |
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
-      #- name: Build arm32v7
-      #  run: |
-      #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
+      - name: Build arm32v7
+        run: |
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
       #- name: Build arm64v8
       #  run: |
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
