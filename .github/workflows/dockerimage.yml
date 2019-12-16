@@ -12,11 +12,6 @@ jobs:
         id: arm32v7
       - name: Preparation
         run: |
-          mkdir -p /home/runner/.docker
-          touch /home/runner/.docker/config.json
-          echo "$(cat /home/runner/.docker/config.json) {\"experimental\": true}" | jq -s add | sudo sponge /home/runner/.docker/config.json
-          sudo service docker restart
-          docker version
           # update packages & install requirements
           sudo apt-get -qy update
           sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
