@@ -19,11 +19,13 @@ jobs:
           cp /usr/bin/qemu-arm-static ./root
           cp /usr/bin/qemu-aarch64-static ./root
           # enable Dockers expermiental features for squash/manifest support
+          # /home/runner/.docker/config.json
           WORKING_DIRECTORY=$(pwd)
+          echo ${WORKING_DIRECTORY}
           export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
           echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
           sudo service docker restart
-          echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
+          # echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
       #- name: Build amd64
       #  run: |
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
