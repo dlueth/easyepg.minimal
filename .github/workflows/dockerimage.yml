@@ -20,6 +20,7 @@ jobs:
           DIRECTORY=$(pwd)
           export DOCKER_CONFIG=${DIRECTORY}/.docker/
           sudo service docker restart
+          docker version
       - name: Build amd64
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
