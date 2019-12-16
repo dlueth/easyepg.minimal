@@ -18,11 +18,12 @@ jobs:
         id: arm32v7
       - name: Build arm32v7
         run: |
-          apt-get -qy --no-install-recommends install qemu-user-static binfmt-support
-          update-binfmts --enable qemu-arm
-          update-binfmts --display qemu-arm
-          mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc
-          echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-arm-static:' > /proc/sys/fs/binfmt_misc/register
+          sudo apt-get -qy update
+          sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support
+          sudo update-binfmts --enable qemu-arm
+          sudo update-binfmts --display qemu-arm
+          sudo mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc
+          sudo echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-arm-static:' > /proc/sys/fs/binfmt_misc/register
           cp /usr/bin/qemu-arm-static ./root
           cp /usr/bin/qemu-aarch64-static ./root
           docker build --compress --no-cache --force-rm -t qoopido/easyepg.minimal:arm32v7-${TAG} -f Dockerfile.arm32v7 .
