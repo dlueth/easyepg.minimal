@@ -20,10 +20,11 @@ jobs:
           cp /usr/bin/qemu-aarch64-static ./root
           # enable Dockers expermiental features for squash/manifest support
           # /home/runner/.docker/config.json
-          WORKING_DIRECTORY=$(pwd)
-          echo ${WORKING_DIRECTORY}
-          export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
-          echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
+          # WORKING_DIRECTORY=$(pwd)
+          # echo ${WORKING_DIRECTORY}
+          # export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
+          # echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
+          echo "$(cat /home/runner/.docker/config.json) {\"experimental\": true}" | jq -s add | sudo sponge /home/runner/.docker/config.json
           sudo service docker restart
           # echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
       #- name: Build amd64
