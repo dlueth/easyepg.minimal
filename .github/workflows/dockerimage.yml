@@ -22,7 +22,7 @@ jobs:
           sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
           cp /usr/bin/qemu-arm-static ./root
           cp /usr/bin/qemu-aarch64-static ./root
-          sudo echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sponge /etc/docker/daemon.json
+          echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
           sudo service docker restart
       #- name: Build amd64
       #  run: |
