@@ -24,9 +24,10 @@ jobs:
           # echo ${WORKING_DIRECTORY}
           # export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
           # echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
-          echo "$(cat /home/runner/.docker/config.json) {\"experimental\": true}" | jq -s add | sudo sponge /home/runner/.docker/config.json
-          sudo service docker restart
-          docker version
+          docker config inspect
+          # echo "$(cat /home/runner/.docker/config.json) {\"experimental\": true}" | jq -s add | sudo sponge /home/runner/.docker/config.json
+          # sudo service docker restart
+          # docker version
           # echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
       #- name: Build amd64
       #  run: |
