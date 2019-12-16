@@ -24,7 +24,8 @@ jobs:
           cp /usr/bin/qemu-aarch64-static ./root
           echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
           sudo service docker restart
-          docker version
+          ls -la ~/
+          ls -la ~/.docker
       #- name: Build amd64
       #  run: |
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
