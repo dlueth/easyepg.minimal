@@ -17,7 +17,8 @@ jobs:
           cp /usr/bin/qemu-arm-static ./root
           cp /usr/bin/qemu-aarch64-static ./root
           # enable Dockers expermiental features for squash/manifest support
-          export DOCKER_CONFIG=${HOME}/.docker/
+          DIRECTORY=$(pwd)
+          export DOCKER_CONFIG=${DIRECTORY}/.docker/
           sudo service docker restart
       - name: Build amd64
         run: |
