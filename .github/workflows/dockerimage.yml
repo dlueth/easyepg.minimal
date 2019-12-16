@@ -18,14 +18,15 @@ jobs:
         id: arm32v7
       - name: Preparation
         run: |
-          export DOCKER_CONFIG=${HOME}/.docker/
+          # update packages & install requirements
           sudo apt-get -qy update
           sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
+          # copy qemu for use via Dockerfile
           cp /usr/bin/qemu-arm-static ./root
           cp /usr/bin/qemu-aarch64-static ./root
-          echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
+          # enable Dockers expermiental features for squash/manifest support
+          export DOCKER_CONFIG=${HOME}/.docker/
           sudo service docker restart
-          docker version
       - name: Build amd64
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
