@@ -24,7 +24,8 @@ jobs:
           # echo ${WORKING_DIRECTORY}
           # export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
           # echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
-          docker config inspect
+          pwd
+          ls -la /home/runner
           # echo "$(cat /home/runner/.docker/config.json) {\"experimental\": true}" | jq -s add | sudo sponge /home/runner/.docker/config.json
           # sudo service docker restart
           # docker version
