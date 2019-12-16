@@ -12,20 +12,21 @@ jobs:
         id: arm32v7
       - name: Preparation
         run: |
+          pwd
+          ls -la /home/runner
+          ls -la /home/runner/work
           # update packages & install requirements
-          sudo apt-get -qy update
-          sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
+          #sudo apt-get -qy update
+          #sudo apt-get -qy --no-install-recommends install qemu-user-static binfmt-support moreutils
           # copy qemu for use via Dockerfile
-          cp /usr/bin/qemu-arm-static ./root
-          cp /usr/bin/qemu-aarch64-static ./root
+          #cp /usr/bin/qemu-arm-static ./root
+          #cp /usr/bin/qemu-aarch64-static ./root
           # enable Dockers expermiental features for squash/manifest support
           # /home/runner/.docker/config.json
           # WORKING_DIRECTORY=$(pwd)
           # echo ${WORKING_DIRECTORY}
           # export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
           # echo "$(cat /etc/docker/daemon.json) {\"experimental\": true}" | jq -s add | sudo sponge /etc/docker/daemon.json
-          pwd
-          ls -la /home/runner
           # echo "$(cat /home/runner/.docker/config.json) {\"experimental\": true}" | jq -s add | sudo sponge /home/runner/.docker/config.json
           # sudo service docker restart
           # docker version
