@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Preparation
-        uses: azure/docker-login@v1
+        - uses: azure/docker-login@v1
           with:
             username: ${{ secrets.DOCKER_HUB_USER }}
             password: ${{ secrets.DOCKER_HUB_TOKEN }}
