@@ -19,6 +19,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
       - name: Preparation
         run: |
+          echo ${DOCKER_CONFIG}
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install moreutils
