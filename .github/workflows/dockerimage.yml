@@ -88,7 +88,7 @@ jobs:
 #          echo "Push arm64v8"
   manifest:
     name: manifest
-    needs: [amd64, arm32v7, arm64v8]
+#    needs: [amd64, arm32v7, arm64v8]
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
