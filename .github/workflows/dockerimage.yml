@@ -17,7 +17,9 @@ jobs:
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install moreutils
-          # enable Dockers experimental feature: squash
+          # enable Dockers experimental features
+            WORKING_DIRECTORY=$(pwd)
+            export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
       - name: Build
@@ -39,7 +41,9 @@ jobs:
             sudo apt-get -qy install qemu-user-static binfmt-support moreutils
           # copy qemu for use via Dockerfile
             cp /usr/bin/qemu-arm-static ./root
-          # enable Dockers experimental feature: squash
+          # enable Dockers experimental features
+            WORKING_DIRECTORY=$(pwd)
+            export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
       - name: Build
@@ -61,7 +65,9 @@ jobs:
             sudo apt-get -qy install qemu-user-static binfmt-support moreutils
           # copy qemu for use via Dockerfile
             cp /usr/bin/qemu-aarch64-static ./root
-          # enable Dockers experimental feature: squash
+          # enable Dockers experimental features
+            WORKING_DIRECTORY=$(pwd)
+            export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
       - name: Build
@@ -77,9 +83,10 @@ jobs:
     steps:
       - name: Preparation
         run: |
-          # enable Dockers experimental feature: manifest
+          # enable Dockers experimental features
             WORKING_DIRECTORY=$(pwd)
             export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
+            sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
       - name: Build
         run: |
