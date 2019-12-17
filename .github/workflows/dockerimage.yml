@@ -1,17 +1,29 @@
 name: Docker Image CI
-on: [push]
+on:
+  push:
+    branches: [master]
+  release:
+    types: [published]
+  schedule:
+    cron: '0 0 * * 0'
 env:
   TAG: latest
   DEBIAN_FRONTEND: noninteractive
 jobs:
   amd64:
-    name: amd64
+    name: Process amd64
     runs-on: ubuntu-18.04
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v1
-      - name: Preparation
+      - name: Configure system
         run: |
+          echo "##########"
+          echo ${GITHUB_EVENT_NAME}
+          echo ${GITHUB_REF}
+          cat ${GITHUB_EVENT_PATH}
+          echo "##########"
+
           # create persitance directory
             mkdir -p ./images
           # update packages & install requirements
@@ -27,22 +39,22 @@ jobs:
             sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
-      - name: Build
+      - name: Build image
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
           docker save qoopido/easyepg.minimal:${TAG}-amd64 > ./images/amd64
-      - name: Persist
+      - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
           name: images
           path: ./images/amd64
   arm32v7:
-    name: arm32v7
+    name: Process arm32v7
     runs-on: ubuntu-18.04
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v1
-      - name: Preparation
+      - name: Configure system
         run: |
           # create persitance directory
             mkdir -p ./images
@@ -61,22 +73,22 @@ jobs:
             sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
-      - name: Build
+      - name: Build image
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
           docker save qoopido/easyepg.minimal:${TAG}-arm32v7 > ./images/arm32v7
-      - name: Persist
+      - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
           name: images
           path: ./images/arm32v7
   arm64v8:
-    name: arm64v8
+    name: Process arm64v8
     runs-on: ubuntu-18.04
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v1
-      - name: Preparation
+      - name: Configure system
         run: |
           # create persitance directory
             mkdir -p ./images
@@ -95,28 +107,28 @@ jobs:
             sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
-      - name: Build
+      - name: Build image
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
           docker save qoopido/easyepg.minimal:${TAG}-arm64v8 > ./images/arm64v8
-      - name: Persist
+      - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
           name: images
           path: ./images/arm64v8
   publish:
-    name: publish
+    name: Process multi-arch
     needs: [amd64, arm32v7, arm64v8]
     runs-on: ubuntu-18.04
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v1
-      - name: Login
+      - name: Authenticate registry
         uses: azure/docker-login@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      - name: Preparation
+      - name: Configure system
         run: |
           # update packages & install requirements
             sudo apt-get -qy update
@@ -131,19 +143,21 @@ jobs:
             sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
-      - name: Import
+      - name: Fetch artifacts
         uses: actions/download-artifact@v1
         with:
           name: images
-      - name: Build
+      - name: Import artifacts
         run: |
-          ls -la ./images
-
+          docker load --input ./images/amd64
+          docker load --input ./images/arm32v7
+          docker load --input ./images/arm64v8
+      - name: Build manifest
+        run: |
           docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
           docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
           docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
-          # echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
-          # docker manifest push qoopido/easyepg.minimal:${TAG} --purge
-      - name: Push
+      - name: Push to registry
         run: |
+          # docker manifest push qoopido/easyepg.minimal:${TAG} --purge
           echo "Push manifest"
