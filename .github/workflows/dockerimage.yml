@@ -23,9 +23,7 @@ jobs:
       - name: Configure system
         run: |
           echo "##########"
-          echo ${GITHUB_EVENT_NAME}
-          echo ${GITHUB_REF}
-          cat ${GITHUB_EVENT_PATH}
+          echo ${GITHUB_SHA}
           echo "##########"
 
           # create persitance directory
