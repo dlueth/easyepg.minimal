@@ -25,18 +25,15 @@ jobs:
             #WORKING_DIRECTORY=$(pwd)
             #export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
             # ... but this is additionally required for squash to work - no idea why though :(
-            #sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
+            sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             # but this is required anyway
-            #sudo service docker restart
+            sudo service docker restart
             #docker version
       #- name: Build amd64
       #  run: |
       #    docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
       - name: Build arm32v7
         run: |
-          WORKING_DIRECTORY=$(pwd)
-          export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
-          sudo service docker restart
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
       #- name: Build arm64v8
       #  run: |
