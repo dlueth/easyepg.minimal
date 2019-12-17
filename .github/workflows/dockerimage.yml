@@ -28,9 +28,12 @@ jobs:
       - name: Build
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
-      - name: Push
-        run: |
-          echo "Push amd64"
+          docker save qoopido/easyepg.minimal:${TAG}-amd64 > ./images/amd64
+      - name: Persist artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: images
+          path: ./images/amd64
   arm32v7:
     name: arm32v7
     runs-on: ubuntu-18.04
@@ -57,9 +60,12 @@ jobs:
       - name: Build
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
-      - name: Push
-        run: |
-          echo "Push arm32v7"
+          docker save qoopido/easyepg.minimal:${TAG}-arm32v7 > ./images/arm32v7
+      - name: Persist artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: images
+          path: ./images/arm32v7
   arm64v8:
     name: arm64v8
     runs-on: ubuntu-18.04
@@ -86,9 +92,12 @@ jobs:
       - name: Build
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
-      - name: Push
-        run: |
-          echo "Push arm64v8"
+          docker save qoopido/easyepg.minimal:${TAG}-arm64v8 > ./images/arm64v8
+      - name: Persist artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: images
+          path: ./images/arm64v8
   manifest:
     name: manifest
     needs: [amd64, arm32v7, arm64v8]
@@ -116,8 +125,14 @@ jobs:
             sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
+      - name: Import artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: images
       - name: Build
         run: |
+          ls -la ./images
+
           docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
           docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
           docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
