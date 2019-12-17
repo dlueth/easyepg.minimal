@@ -17,7 +17,8 @@ jobs:
             sudo apt-get -qy install moreutils
           # enable Dockers experimental features
             if [[ -z "${DOCKER_CONFIG}" ]]; then
-              export DOCKER_CONFIG=$(mktemp -d -t docker.XXXXXXXXXX)
+              export DOCKER_CONFIG="/home/runner/work/_temp/docker.$(date +%s)"
+              mkdir -p DOCKER_CONFIG
               touch ${DOCKER_CONFIG}/config.json
             fi
 
