@@ -1,11 +1,13 @@
 name: Docker Image CI
 on:
   push:
-    branches: [master]
+    branches:
+      - master
   release:
-    types: [published]
+    types:
+      - published
   schedule:
-    cron: '0 0 * * 0'
+    - cron: '0 0 * * 0'
 env:
   TAG: latest
   DEBIAN_FRONTEND: noninteractive
