@@ -19,15 +19,22 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
       - name: Preparation
         run: |
-          echo ${DOCKER_CONFIG}
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install moreutils
           # enable Dockers experimental features
-            WORKING_DIRECTORY=$(pwd)
-            export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
+            if [[ -z "${DOCKER_CONFIG}" ]]; then
+              export DOCKER_CONFIG=$(mktemp -d -t docker.XXXXXXXXXX)
+              touch ${DOCKER_CONFIG}/config.json
+            fi
+
+            echo ${DOCKER_CONFIG}
+
+            sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
+
+            docker version
 #      - name: Build
 #        run: |
 #          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
@@ -87,8 +94,13 @@ jobs:
 #    needs: [amd64, arm32v7, arm64v8]
 #    runs-on: ubuntu-18.04
 #    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v1
 #      - name: Preparation
 #        run: |
+#          # update packages & install requirements
+#            sudo apt-get -qy update
+#            sudo apt-get -qy install moreutils
 #          # enable Dockers experimental features
 #            WORKING_DIRECTORY=$(pwd)
 #            export DOCKER_CONFIG=${WORKING_DIRECTORY}/.docker/
