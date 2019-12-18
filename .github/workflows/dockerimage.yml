@@ -11,21 +11,31 @@ on:
   schedule:
     - cron: '0 0 * * 0'
 env:
-  TAG: latest
   DEBIAN_FRONTEND: noninteractive
+  TEMPORARY_DIRECTORY: /home/runner/work/_temp
 jobs:
+  preparation:
+    name: Preparation
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Create environment
+        run: |
+          touch ${TEMPORARY_DIRECTORY}/env
+
+          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')\"" >> ${TEMPORARY_DIRECTORY}/env
   amd64:
     name: Process amd64
     runs-on: ubuntu-18.04
+    needs: [preparation]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
       - name: Configure system
         run: |
-          echo "##########"
-          echo ${GITHUB_SHA}
-          echo "##########"
-
+          # source environment
+            source ${TEMPORARY_DIRECTORY}/env
+            echo ${DOCKER_TAG}
+            exit 1
           # create persitance directory
             mkdir -p ./images
           # update packages & install requirements
@@ -33,7 +43,7 @@ jobs:
             sudo apt-get -qy install moreutils
           # enable Dockers experimental features
             if [[ -z "${DOCKER_CONFIG}" ]]; then
-              export DOCKER_CONFIG="/home/runner/work/_temp/docker.$(date +%s)"
+              export DOCKER_CONFIG="${TEMPORARY_DIRECTORY}/docker.$(date +%s)"
               mkdir -p ${DOCKER_CONFIG}
               touch ${DOCKER_CONFIG}/config.json
             fi
@@ -43,8 +53,8 @@ jobs:
             sudo service docker restart
       - name: Build image
         run: |
-          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-amd64 -f Dockerfile.amd64 .
-          docker save qoopido/easyepg.minimal:${TAG}-amd64 > ./images/amd64
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 -f Dockerfile.amd64 .
+          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 > ./images/amd64
       - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
@@ -53,11 +63,14 @@ jobs:
   arm32v7:
     name: Process arm32v7
     runs-on: ubuntu-18.04
+    needs: [preparation]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
       - name: Configure system
         run: |
+          exit 1
+
           # create persitance directory
             mkdir -p ./images
           # update packages & install requirements
@@ -67,7 +80,7 @@ jobs:
             cp /usr/bin/qemu-arm-static ./root
           # enable Dockers experimental features
             if [[ -z "${DOCKER_CONFIG}" ]]; then
-              export DOCKER_CONFIG="/home/runner/work/_temp/docker.$(date +%s)"
+              export DOCKER_CONFIG="${TEMPORARY_DIRECTORY}/docker.$(date +%s)"
               mkdir -p ${DOCKER_CONFIG}
               touch ${DOCKER_CONFIG}/config.json
             fi
@@ -77,8 +90,8 @@ jobs:
             sudo service docker restart
       - name: Build image
         run: |
-          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm32v7 -f Dockerfile.arm32v7 .
-          docker save qoopido/easyepg.minimal:${TAG}-arm32v7 > ./images/arm32v7
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 -f Dockerfile.arm32v7 .
+          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 > ./images/arm32v7
       - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
@@ -87,11 +100,14 @@ jobs:
   arm64v8:
     name: Process arm64v8
     runs-on: ubuntu-18.04
+    needs: [preparation]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
       - name: Configure system
         run: |
+          exit 1
+
           # create persitance directory
             mkdir -p ./images
           # update packages & install requirements
@@ -101,7 +117,7 @@ jobs:
             cp /usr/bin/qemu-aarch64-static ./root
           # enable Dockers experimental features
             if [[ -z "${DOCKER_CONFIG}" ]]; then
-              export DOCKER_CONFIG="/home/runner/work/_temp/docker.$(date +%s)"
+              export DOCKER_CONFIG="${TEMPORARY_DIRECTORY}/docker.$(date +%s)"
               mkdir -p ${DOCKER_CONFIG}
               touch ${DOCKER_CONFIG}/config.json
             fi
@@ -111,8 +127,8 @@ jobs:
             sudo service docker restart
       - name: Build image
         run: |
-          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${TAG}-arm64v8 -f Dockerfile.arm64v8 .
-          docker save qoopido/easyepg.minimal:${TAG}-arm64v8 > ./images/arm64v8
+          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 -f Dockerfile.arm64v8 .
+          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 > ./images/arm64v8
       - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
@@ -120,8 +136,8 @@ jobs:
           path: ./images/arm64v8
   publish:
     name: Process multi-arch
-    needs: [amd64, arm32v7, arm64v8]
     runs-on: ubuntu-18.04
+    needs: [preparation, amd64, arm32v7, arm64v8]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
@@ -132,12 +148,14 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
       - name: Configure system
         run: |
+          exit 1
+
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install moreutils
           # enable Dockers experimental features
             if [[ -z "${DOCKER_CONFIG}" ]]; then
-              export DOCKER_CONFIG="/home/runner/work/_temp/docker.$(date +%s)"
+              export DOCKER_CONFIG="${TEMPORARY_DIRECTORY}/docker.$(date +%s)"
               mkdir -p ${DOCKER_CONFIG}
               touch ${DOCKER_CONFIG}/config.json
             fi
@@ -156,10 +174,10 @@ jobs:
           docker load --input ./images/arm64v8
       - name: Build manifest
         run: |
-          docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
-          docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
-          docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
+          docker manifest create qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8
+          docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 --os linux --arch arm
+          docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 --os linux --arch arm64 --variant armv8
       - name: Push to registry
         run: |
-          # docker manifest push qoopido/easyepg.minimal:${TAG} --purge
+          # docker manifest push qoopido/easyepg.minimal:${DOCKER_TAG} --purge
           echo "Push manifest"
