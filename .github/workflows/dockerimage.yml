@@ -23,6 +23,8 @@ jobs:
           touch ${TEMPORARY_DIRECTORY}/env
 
           echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')\"" >> ${TEMPORARY_DIRECTORY}/env
+
+          cat ${TEMPORARY_DIRECTORY}/env
   amd64:
     name: Process amd64
     runs-on: ubuntu-18.04
