@@ -20,11 +20,14 @@ jobs:
     steps:
       - name: Create environment
         run: |
-          touch ${TEMPORARY_DIRECTORY}/env
+          touch ./env
 
-          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')\"" >> ${TEMPORARY_DIRECTORY}/env
-
-          cat ${TEMPORARY_DIRECTORY}/env
+          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')\"" >> ./env
+      - name: Persist environment
+        uses: actions/upload-artifact@v1
+        with:
+          name: environment
+          path: ./env
   amd64:
     name: Process amd64
     runs-on: ubuntu-18.04
@@ -32,10 +35,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
+      - name: Fetch environment
+        uses: actions/download-artifact@v1
+        with:
+          name: environment
       - name: Configure system
         run: |
           # source environment
-            source ${TEMPORARY_DIRECTORY}/env
+            source ./env
             echo ${DOCKER_TAG}
             exit 1
           # create persitance directory
@@ -69,10 +76,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
+      - name: Fetch environment
+        uses: actions/download-artifact@v1
+        with:
+          name: environment
       - name: Configure system
         run: |
           exit 1
 
+          # source environment
+            source ./env
           # create persitance directory
             mkdir -p ./images
           # update packages & install requirements
@@ -106,10 +119,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
+      - name: Fetch environment
+        uses: actions/download-artifact@v1
+        with:
+          name: environment
       - name: Configure system
         run: |
           exit 1
 
+          # source environment
+            source ./env
           # create persitance directory
             mkdir -p ./images
           # update packages & install requirements
@@ -143,6 +162,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
+      - name: Fetch environment
+        uses: actions/download-artifact@v1
+        with:
+          name: environment
       - name: Authenticate registry
         uses: azure/docker-login@v1
         with:
@@ -152,6 +175,8 @@ jobs:
         run: |
           exit 1
 
+          # source environment
+            source ./env
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install moreutils
