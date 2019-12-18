@@ -57,9 +57,6 @@ jobs:
         run: |
           source ./environment/vars
 
-          cat ./environment/vars
-          echo ${DOCKER_TAG}
-
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 -f Dockerfile.amd64 .
           docker save qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 > ./amd64
       - name: Persist artifact
@@ -80,8 +77,6 @@ jobs:
           name: environment
       - name: Configure system
         run: |
-          exit 1
-
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install qemu-user-static binfmt-support moreutils
@@ -123,8 +118,6 @@ jobs:
           name: environment
       - name: Configure system
         run: |
-          exit 1
-
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install qemu-user-static binfmt-support moreutils
@@ -192,21 +185,15 @@ jobs:
       - name: Import artifacts
         run: |
           docker load --input ./images/amd64
-
-          exit 1
-
           docker load --input ./images/arm32v7
           docker load --input ./images/arm64v8
-      - name: Build version manifest
+      - name: Push version to registry
         run: |
           source ./environment/vars
 
           docker manifest create qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8
           docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 --os linux --arch arm
           docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 --os linux --arch arm64 --variant armv8
-      - name: Push version to registry
-        run: |
-          source ./environment/vars
 
           # for ARCH in amd64 arm32v7 arm64v8; do
           #   docker push qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH}
@@ -215,7 +202,7 @@ jobs:
           # docker manifest push qoopido/easyepg.minimal:${DOCKER_TAG} --purge
 
           echo "Push version manifest"
-      - name: Build latest manifest
+      - name: Push latest to registry
         run: |
           source ./environment/vars
 
@@ -226,9 +213,6 @@ jobs:
           docker manifest create qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-amd64 qoopido/easyepg.minimal:latest-arm32v7 qoopido/easyepg.minimal:latest-arm64v8
           docker manifest annotate qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-arm32v7 --os linux --arch arm
           docker manifest annotate qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-arm64v8 --os linux --arch arm64 --variant armv8
-      - name: Push latest to registry
-        run: |
-          source ./environment/vars
 
           # for ARCH in amd64 arm32v7 arm64v8; do
           #   docker push qoopido/easyepg.minimal:latest-${ARCH}
