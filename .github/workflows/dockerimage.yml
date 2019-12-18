@@ -42,6 +42,8 @@ jobs:
       - name: Configure system
         run: |
           # source environment
+            ls -la ./
+            ls -la ./environment
             source ./env
             echo ${DOCKER_TAG}
             exit 1
