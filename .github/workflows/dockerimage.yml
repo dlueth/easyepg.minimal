@@ -1,4 +1,4 @@
-name: Build & publish Docker images
+name: Build & publish
 on:
   push:
     branches:
@@ -56,6 +56,9 @@ jobs:
       - name: Build image
         run: |
           source ./environment/vars
+
+          cat ./environment/vars
+          echo ${DOCKER_TAG}
 
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 -f Dockerfile.amd64 .
           docker save qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 > ./amd64
@@ -226,7 +229,7 @@ jobs:
       - name: Push latest to registry
         run: |
           source ./environment/vars
-          
+
           # for ARCH in amd64 arm32v7 arm64v8; do
           #   docker push qoopido/easyepg.minimal:latest-${ARCH}
           # done
