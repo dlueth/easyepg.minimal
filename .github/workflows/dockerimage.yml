@@ -22,12 +22,12 @@ jobs:
         run: |
           touch ./env
 
-          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')\"" >> ./env
+          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')\"" >> ./vars
       - name: Persist environment
         uses: actions/upload-artifact@v1
         with:
           name: environment
-          path: ./env
+          path: ./vars
   amd64:
     name: Process amd64
     runs-on: ubuntu-18.04
@@ -44,11 +44,9 @@ jobs:
           # source environment
             ls -la ./
             ls -la ./environment
-            source ./env
+            source ./environment/vars
             echo ${DOCKER_TAG}
             exit 1
-          # create persitance directory
-            mkdir -p ./images
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install moreutils
@@ -65,12 +63,12 @@ jobs:
       - name: Build image
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 -f Dockerfile.amd64 .
-          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 > ./images/amd64
+          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 > ./amd64
       - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
           name: images
-          path: ./images/amd64
+          path: ./amd64
   arm32v7:
     name: Process arm32v7
     runs-on: ubuntu-18.04
@@ -87,9 +85,7 @@ jobs:
           exit 1
 
           # source environment
-            source ./env
-          # create persitance directory
-            mkdir -p ./images
+            source ./environment/vars
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install qemu-user-static binfmt-support moreutils
@@ -108,12 +104,12 @@ jobs:
       - name: Build image
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 -f Dockerfile.arm32v7 .
-          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 > ./images/arm32v7
+          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 > ./arm32v7
       - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
           name: images
-          path: ./images/arm32v7
+          path: ./arm32v7
   arm64v8:
     name: Process arm64v8
     runs-on: ubuntu-18.04
@@ -130,9 +126,7 @@ jobs:
           exit 1
 
           # source environment
-            source ./env
-          # create persitance directory
-            mkdir -p ./images
+            source ./environment/vars
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install qemu-user-static binfmt-support moreutils
@@ -151,12 +145,12 @@ jobs:
       - name: Build image
         run: |
           docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 -f Dockerfile.arm64v8 .
-          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 > ./images/arm64v8
+          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 > ./arm64v8
       - name: Persist artifact
         uses: actions/upload-artifact@v1
         with:
           name: images
-          path: ./images/arm64v8
+          path: ./arm64v8
   publish:
     name: Process multi-arch
     runs-on: ubuntu-18.04
@@ -168,6 +162,10 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: environment
+      - name: Fetch artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: images
       - name: Authenticate registry
         uses: azure/docker-login@v1
         with:
@@ -178,7 +176,7 @@ jobs:
           exit 1
 
           # source environment
-            source ./env
+            source ./environment/vars
           # update packages & install requirements
             sudo apt-get -qy update
             sudo apt-get -qy install moreutils
@@ -192,10 +190,6 @@ jobs:
             sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
-      - name: Fetch artifacts
-        uses: actions/download-artifact@v1
-        with:
-          name: images
       - name: Import artifacts
         run: |
           docker load --input ./images/amd64
