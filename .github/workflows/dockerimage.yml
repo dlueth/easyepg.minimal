@@ -195,17 +195,17 @@ jobs:
           docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 --os linux --arch arm64 --variant armv8
 
           docker manifest push qoopido/easyepg.minimal:${DOCKER_TAG} --purge
-#      - name: Push latest to registry
-#        run: |
-#          source ./environment/vars
-#
-#          for ARCH in amd64 arm32v7 arm64v8; do
-#            docker tag qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH} qoopido/easyepg.minimal:latest-${ARCH}
-#            docker push qoopido/easyepg.minimal:latest-${ARCH}
-#          done
-#
-#          docker manifest create qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-amd64 qoopido/easyepg.minimal:latest-arm32v7 qoopido/easyepg.minimal:latest-arm64v8
-#          docker manifest annotate qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-arm32v7 --os linux --arch arm
-#          docker manifest annotate qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-arm64v8 --os linux --arch arm64 --variant armv8
-#
-#          docker manifest push qoopido/easyepg.minimal:latest --purge
+      - name: Push latest to registry
+        run: |
+          source ./environment/vars
+
+          for ARCH in amd64 arm32v7 arm64v8; do
+            docker tag qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH} qoopido/easyepg.minimal:latest-${ARCH}
+            docker push qoopido/easyepg.minimal:latest-${ARCH}
+          done
+
+          docker manifest create qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-amd64 qoopido/easyepg.minimal:latest-arm32v7 qoopido/easyepg.minimal:latest-arm64v8
+          docker manifest annotate qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-arm32v7 --os linux --arch arm
+          docker manifest annotate qoopido/easyepg.minimal:latest qoopido/easyepg.minimal:latest-arm64v8 --os linux --arch arm64 --variant armv8
+
+          docker manifest push qoopido/easyepg.minimal:latest --purge
