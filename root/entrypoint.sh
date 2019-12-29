@@ -43,14 +43,16 @@ else
 fi
 
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
-dpkg-reconfigure -f noninteractive tzdata
-
-if ! grep -q ${GROUP_ID} /etc/group; then
-  groupadd --gid ${GROUP_ID} easyepg
-fi
+echo ${TIMEZONE} > /etc/timezone
 
 if ! getent passwd ${USER_ID}; then
-  useradd --uid ${USER_ID} --gid ${GROUP_ID} --home /easyepg --shell /bin/bash easyepg
+  adduser -D -g "" -u ${USER_ID} -h /easyepg -s /bin/bash easyepg
+fi
+
+if ! getent group ${GROUP_ID}; then
+  GROUP_NAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w ${1:-16} | head -n 1)
+
+  addgroup -g ${GROUP_ID} easyepg ${GROUP_NAME}
 fi
 
 chown -R ${USER_ID}:${GROUP_ID} /easyepg
@@ -71,7 +73,7 @@ case "${MODE}" in
     sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /easyepg.cron
     sed -i "s/\${USERNAME}/${USERNAME}/" /easyepg.cron
     crontab -u root /easyepg.cron
-    exec /usr/sbin/cron -f -l 0
+    exec /usr/sbin/crond -f -l 0
     ;;
   *)
     exec tail -f /dev/null
