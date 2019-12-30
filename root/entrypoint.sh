@@ -52,7 +52,8 @@ fi
 if ! getent group ${GROUP_ID}; then
   GROUP_NAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w ${1:-16} | head -n 1)
 
-  addgroup -g ${GROUP_ID} easyepg ${GROUP_NAME}
+  addgroup -g ${GROUP_ID} ${GROUP_NAME}
+  addgroup easyepg ${GROUP_NAME}
 fi
 
 chown -R ${USER_ID}:${GROUP_ID} /easyepg
