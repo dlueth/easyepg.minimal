@@ -50,7 +50,7 @@ RUN apk update \
     && cp /tmp/phantomjs-${PHANTOMJS_VERSION}-linux-x86_64/bin/phantomjs /usr/local/bin/phantomjs \
     ### install cpan modules
     && cpan App:cpanminus \
-    && cpan App:cpanminus \
+    # && cpanm install local::lib \
     && cpanm install JSON \
     && cpanm install XML::Rules \
     && cpanm install XML::DOM \

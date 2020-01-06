@@ -2,8 +2,8 @@
 
 PWD=$(pwd)
 
-apt-get -qy update
-apt-get install -qy ${PACKAGES}
+apk update
+apk add --update --no-cache ${PACKAGES}
 
 cd ${PWD}
 
