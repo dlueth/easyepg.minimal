@@ -4,12 +4,6 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
       org.label-schema.name="easyepg.minimal"
 
-ARG DEBIAN_FRONTEND="noninteractive"
-ARG TERM=xterm
-ARG LANGUAGE="en_US.UTF-8"
-ARG LANG="en_US.UTF-8"
-ARG LC_ALL="en_US.UTF-8"
-ARG BUILD_PATHS="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm"
 ARG BUILD_DEPENDENCIES="build-essential cpanminus"
 ARG DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl file wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping"
 
@@ -20,11 +14,22 @@ ENV MODE="run" \
     FREQUENCY="0 2 * * *" \
     UPDATE="yes" \
     REPO="sunsettrack4" \
-    BRANCH="master"
+    BRANCH="master" \
+    PACKAGES="" \
+    DEBIAN_FRONTEND="noninteractive" \
+    TERM=xterm \
+    LANGUAGE="en_US.UTF-8" \
+    LANG="en_US.UTF-8" \
+    LC_ALL="en_US.UTF-8" \
+    CLEANUP="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm"
 
 __CROSS_COPY root/qemu-__QEMU_ARCH__-static /usr/bin/
 COPY root/entrypoint.sh /entrypoint.sh
 COPY root/process.sh /process.sh
+COPY root/easyepg.install.sh /easyepg.install.sh
+COPY root/easyepg.update.sh /easyepg.update.sh
+COPY root/packages.install.sh /packages.install.sh
+COPY root/packages.cleanup.sh /packages.cleanup.sh
 COPY root/easyepg.cron /easyepg.cron
 
 RUN apt-get -qy update \
@@ -62,13 +67,14 @@ RUN apt-get -qy update \
     && touch /xmltv.sock \
     && chmod +x /entrypoint.sh \
     && chmod +x /process.sh \
+    && chmod +x /easyepg.install.sh \
+    && chmod +x /easyepg.update.sh \
+    && chmod +x /packages.install.sh \
+    && chmod +x /packages.cleanup.sh \
     && chmod 644 /easyepg.cron \
     ### cleanup
     && apt-get remove --purge -qy ${BUILD_DEPENDENCIES} \
-    && apt-get -qy autoclean \
-    && apt-get -qy clean \
-    && apt-get -qy autoremove --purge \
-    && rm -rf ${BUILD_PATHS}
+    && /packages.cleanup.sh
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 

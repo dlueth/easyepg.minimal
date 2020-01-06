@@ -34,24 +34,12 @@ if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
-updateEasyepg()
-{
-  rm -rf /easyepg/easyepg
-  git clone https://github.com/${REPO}/easyepg.git /easyepg/easyepg
-
-  if [[ "${BRANCH}" != "master" ]]; then
-    cd /easyepg/easyepg
-    git checkout ${BRANCH}
+if [[ ! -f /easyepg/update.sh ]]; then
+  /easyepg.install.sh
+else
+  if [[ "${UPDATE}" = "yes" ]]; then
+    /easyepg.update.sh
   fi
-
-  cd /easyepg
-  /bin/bash ./easyepg/update.sh
-  cd /
-  rm -rf /easyepg/easyepg
-}
-
-if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
-    updateEasyepg
 fi
 
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
@@ -69,6 +57,11 @@ chown -R ${USER_ID}:${GROUP_ID} /easyepg
 chown -R ${USER_ID}:${GROUP_ID} /tmp
 
 USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
+
+if [[ ! -z "${PACKAGES}" ]]; then
+  /packages.install.sh
+  /packages.cleanup.sh
+fi
 
 case "${MODE}" in
   run)

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PWD=$(pwd)
+
 writeSocket()
 {
   FILES=$(find /easyepg/xml -type f -name "*.xml" -printf "%T@ %p\n" | sort -n | cut -d " " -f 2)
@@ -10,6 +12,11 @@ writeSocket()
     echo "> ${FILE}"
   done <<< "${FILES}"
 }
+
+if [[ "${MODE}" = "cron" ]] && [[ "${UPDATE}" = "yes" ]]; then
+    echo "Updating easyepg"
+    /easyepg.update.sh
+fi
 
 echo "Cleaning up"
 rm -rf /easyepg/xml/*
@@ -25,3 +32,4 @@ if [[ -S /xmltv.sock ]]; then
   writeSocket
 fi
 
+cd ${PWD}

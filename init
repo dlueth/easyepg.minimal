@@ -30,6 +30,7 @@ DEFAULT_UPDATE="no"
 DEFAULT_REPO="sunsettrack4"
 DEFAULT_BRANCH="master"
 DEFAULT_TAG="latest"
+DEFAULT_PACKAGES=""
 
 if [ -z "${NO_CPU_LIMIT}" ]; then
   DEFAULT_CPU_LIMIT=$(docker info 2>&1 | grep -E "^ *CPUs: " | sed "s/^ *CPUs: //")
@@ -105,6 +106,7 @@ if [ -z "${BRANCH}" ] || [ "${BRANCH}" = "master" ]; then
 fi
 
 read -p "Easyepg.minimal docker tag [${DEFAULT_TAG}]: " TAG
+read -p "Additional APT packages [${DEFAULT_PACKAGES}]: " PACKAGES
 
 if [ -z "${VOLUME}" ]; then
   VOLUME=${DEFAULT_VOLUME}
@@ -142,6 +144,10 @@ if [ -z "${TAG}" ]; then
   TAG=${DEFAULT_TAG}
 fi
 
+if [ -z "${PACKAGES}" ]; then
+  PACKAGES=${DEFAULT_PACKAGES}
+fi
+
 if [ ! -d "${VOLUME}" ]; then
   mkdir -p ${VOLUME}
 fi
@@ -177,7 +183,7 @@ docker pull qoopido/easyepg.minimal:${TAG}
 
 log "Creating new container..."
 
-OPTIONS="--tmpfs /tmp --tmpfs /var/log -e USER_ID=\"${USER_ID}\" -e GROUP_ID=\"${GROUP_ID}\" -e TIMEZONE=\"${TIMEZONE}\" -e FREQUENCY=\"${FREQUENCY}\" -e UPDATE=\"${UPDATE}\" -e REPO=\"${REPO}\" -e BRANCH=\"${BRANCH}\" -v ${VOLUME}:/easyepg"
+OPTIONS="--tmpfs /tmp --tmpfs /var/log -e USER_ID=\"${USER_ID}\" -e GROUP_ID=\"${GROUP_ID}\" -e TIMEZONE=\"${TIMEZONE}\" -e FREQUENCY=\"${FREQUENCY}\" -e UPDATE=\"${UPDATE}\" -e REPO=\"${REPO}\" -e BRANCH=\"${BRANCH}\" -e PACKAGES=\"${PACKAGES}\" -v ${VOLUME}:/easyepg"
 
 if [ -n "${SOCKET}" ]; then
   OPTIONS="${OPTIONS} -v ${SOCKET}:/xmltv.sock"
