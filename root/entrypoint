@@ -35,10 +35,10 @@ if [[ -z "${BRANCH}" ]]; then
 fi
 
 if [[ ! -f /easyepg/update.sh ]]; then
-  /easyepg.install.sh
+  /usr/local/bin/easyepg.install
 else
   if [[ "${UPDATE}" = "yes" ]]; then
-    /easyepg.update.sh
+    /usr/local/bin/easyepg.update
   fi
 fi
 
@@ -62,8 +62,8 @@ chown -R ${USER_ID}:${GROUP_ID} /tmp
 USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
 
 if [[ ! -z "${PACKAGES}" ]]; then
-  /packages.install.sh
-  /packages.cleanup.sh
+  /usr/local/sbin/packages.install
+  /usr/local/sbin/packages.cleanup
 fi
 
 case "${MODE}" in
@@ -71,9 +71,9 @@ case "${MODE}" in
     su ${USERNAME} -c "TERM=xterm /process.sh"
     ;;
   cron)
-    sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /easyepg.cron
-    sed -i "s/\${USERNAME}/${USERNAME}/" /easyepg.cron
-    crontab -u root /easyepg.cron
+    sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /etc/easyepg.cron
+    sed -i "s/\${USERNAME}/${USERNAME}/" /etc/easyepg.cron
+    crontab -u root /etc/easyepg.cron
     exec /usr/sbin/crond -f -l 0
     ;;
   *)

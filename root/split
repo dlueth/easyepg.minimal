@@ -1,0 +1,81 @@
+#!/bin/bash
+
+SPLIT_BYTES=""
+SPLIT_LINES=""
+SUFFIX_LENGTH=2
+NUMERIC_SUFFIXES=""
+NUMERIC_SUFFIXES_CURRENT=0
+
+while :; do
+  case $1 in
+    -b)
+      if [[ "${2}" ]]; then
+        SPLIT_BYTES=${2}
+        shift
+      fi
+    ;;
+    -l)
+      if [[ "${2}" ]]; then
+        SPLIT_LINES=${2}
+        shift
+      fi
+    ;;
+    -a)
+      if [[ "${2}" ]]; then
+        SUFFIX_LENGTH=${2}
+        shift
+      fi
+    ;;
+    --lines=?*)
+      SPLIT_LINES=${1#*=}
+    ;;
+    --numeric-suffixes)
+      NUMERIC_SUFFIXES=1
+    ;;
+    --numeric-suffixes=?*)
+      NUMERIC_SUFFIXES="yes"
+      NUMERIC_SUFFIXES_CURRENT=${1#*=}
+    ;;
+    --) # end of arguments
+      shift
+      break
+    ;;
+    -?*) # ignore unknown arguments
+    ;;
+    *) # no more arguments
+      break
+    ;;
+  esac
+
+  shift
+done
+
+FILE="${1}"
+PREFIX="${2}"
+TARGET_DIR=$(dirname "${PREFIX}")
+TARGET_BASE=$(basename "${PREFIX}")
+OPTIONS=""
+
+if [[ "${SPLIT_BYTES}" ]]; then
+  OPTIONS="${OPTIONS} -b ${SPLIT_BYTES}"
+fi
+
+if [[ "${SPLIT_LINES}" ]]; then
+  OPTIONS="${OPTIONS} -l ${SPLIT_LINES}"
+fi
+
+if [[ "${SUFFIX_LENGTH}" ]]; then
+  OPTIONS="${OPTIONS} -a ${SUFFIX_LENGTH}"
+fi
+
+/usr/bin/split ${OPTIONS} ${FILE} ${PREFIX}
+
+if [[ "${NUMERIC_SUFFIXES}" ]]; then
+  for source in $(find ${TARGET_DIR} -type f -regex ".*/${TARGET_BASE}[a-z]\{${SUFFIX_LENGTH}\}" | sort -z | tr -d '\0') ; do
+    target=$(echo ${source} | sed "s/[a-z]\{${SUFFIX_LENGTH}\}$/$(printf "%0${SUFFIX_LENGTH}d" ${NUMERIC_SUFFIXES_CURRENT})/g")
+
+    mv ${source} ${target}
+
+    NUMERIC_SUFFIXES_CURRENT=$(( ${NUMERIC_SUFFIXES_CURRENT} + 1 ))
+  done
+fi

@@ -5,7 +5,7 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.name="easyepg.minimal"
 
 ARG BUILD_DEPENDENCIES="build-base cmake musl-dev patch gettext-dev perl-dev perl-app-cpanminus"
-ARG DEPENDENCIES="bash socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils perl perl-utils perl-doc jq php php-curl perl-xml-twig iputils tzdata libintl"
+ARG DEPENDENCIES="bash socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils perl perl-utils perl-doc jq php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl"
 
 ENV MODE="run" \
     USER_ID="1099" \
@@ -25,13 +25,14 @@ ENV MODE="run" \
     MUSL_LOCPATH="/usr/share/i18n/locales/musl"
 
 __CROSS_COPY root/qemu-__QEMU_ARCH__-static /usr/bin/
-COPY root/entrypoint.sh /entrypoint.sh
-COPY root/process.sh /process.sh
-COPY root/easyepg.install.sh /easyepg.install.sh
-COPY root/easyepg.update.sh /easyepg.update.sh
-COPY root/packages.install.sh /packages.install.sh
-COPY root/packages.cleanup.sh /packages.cleanup.sh
-COPY root/easyepg.cron /easyepg.cron
+COPY root/entrypoint /usr/local/sbin/entrypoint
+COPY root/split /usr/local/bin/split
+COPY root/easyepg.process /usr/local/bin/easyepg.process
+COPY root/easyepg.install /usr/local/bin/easyepg.install
+COPY root/easyepg.update /usr/local/bin/easyepg.update
+COPY root/packages.install /usr/local/sbin/packages.install
+COPY root/packages.cleanup /usr/local/sbin/packages.cleanup
+COPY root/easyepg.cron /etc/easyepg.cron
 
 RUN apk update \
     && apk upgrade --no-cache \
@@ -44,14 +45,15 @@ RUN apk update \
     && cmake -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . \
     && make \
     && make install \
+    && cd / \
     ### install phantomjs
     && curl -Ls "https://github.com/dustinblackman/phantomized/releases/download/${PHANTOMJS_VERSION}/dockerized-phantomjs.tar.gz" | tar xz -C / \
     && curl -k -Ls https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-x86_64.tar.bz2  | tar -jxvf - -C /tmp \
     && cp /tmp/phantomjs-${PHANTOMJS_VERSION}-linux-x86_64/bin/phantomjs /usr/local/bin/phantomjs \
     ### install cpan modules
     && cpan App:cpanminus \
-    # && cpanm install local::lib \
     && cpanm install JSON \
+    # && cpanm install local::lib \
     && cpanm install XML::Rules \
     && cpanm install XML::DOM \
     && cpanm install HTML::TreeBuilder \
@@ -60,24 +62,28 @@ RUN apk update \
     && cpanm install Time::Seconds \
     && cpanm install DateTime \
     && cpanm install DateTime::Format::DateParse \
+    && cpanm install DateTime::Format::Strptime \
     && cpanm install utf8 \
     ### create necessary files/directories
     && mkdir -p /easyepg \
     && touch /xmltv.sock \
     ### alter permissions
-    && chmod +x /entrypoint.sh \
-    && chmod +x /process.sh \
-    && chmod +x /easyepg.install.sh \
-    && chmod +x /easyepg.update.sh \
-    && chmod +x /packages.install.sh \
-    && chmod +x /packages.cleanup.sh \
-    && chmod 644 /easyepg.cron \
+    && chmod +x /usr/local/sbin/entrypoint \
+    && chmod +x /usr/local/bin/split \
+    && chmod +x /usr/local/bin/easyepg.process \
+    && chmod +x /usr/local/bin/easyepg.install \
+    && chmod +x /usr/local/bin/easyepg.update \
+    && chmod +x /usr/local/sbin/packages.install \
+    && chmod +x /usr/local/sbin/packages.cleanup \
+    && chmod 644 /etc/easyepg.cron \
+    ### set alias
+    && alias split="/usr/local/bin/split" \
     ### cleanup
     && apk del .build-dependencies \
     && find /usr/share/i18n/locales/musl -type f ! -name 'en_US.UTF-8' | xargs rm \
-    && /packages.cleanup.sh
+    && /usr/local/sbin/packages.cleanup
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/usr/local/sbin/entrypoint" ]
 
 VOLUME /easyepg
 
