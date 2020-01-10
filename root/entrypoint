@@ -68,7 +68,7 @@ fi
 
 case "${MODE}" in
   run)
-    su ${USERNAME} -c "TERM=xterm /process.sh"
+    su ${USERNAME} -c "TERM=xterm /usr/local/bin/easyepg.process"
     ;;
   cron)
     sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /etc/easyepg.cron
