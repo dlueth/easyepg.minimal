@@ -62,6 +62,7 @@ RUN apt-get -qy update \
     && cpanm install Time::Seconds \
     && cpanm install DateTime \
     && cpanm install DateTime::Format::DateParse \
+    && cpanm install DateTime::Format::Strptime \
     && cpanm install utf8 \
     && mkdir -p /easyepg \
     && touch /xmltv.sock \
