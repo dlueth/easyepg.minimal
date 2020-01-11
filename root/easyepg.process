@@ -4,7 +4,7 @@ PWD=$(pwd)
 
 writeSocket()
 {
-  FILES=$(find /easyepg/xml -type f -name "*.xml" -printf "%T@ %p\n" | sort -n | cut -d " " -f 2)
+  FILES=$(find /easyepg/xml -type f -name "*.xml" -exec ls -1rt "{}" +;)
 
   while read -r FILE; do
     cat ${FILE} | socat - UNIX-CONNECT:/xmltv.sock
