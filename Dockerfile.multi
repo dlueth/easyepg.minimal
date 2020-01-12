@@ -27,7 +27,6 @@ ENV MODE="run" \
 __CROSS_COPY root/qemu-__QEMU_ARCH__-static /usr/bin/
 COPY --from=__BASE_ARCH__/debian:buster-slim /usr/bin/split /usr/local/bin/split
 COPY root/entrypoint /usr/local/sbin/entrypoint
-# COPY root/split /usr/local/bin/split
 COPY root/easyepg.process /usr/local/bin/easyepg.process
 COPY root/easyepg.install /usr/local/bin/easyepg.install
 COPY root/easyepg.update /usr/local/bin/easyepg.update

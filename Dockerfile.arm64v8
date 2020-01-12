@@ -27,7 +27,6 @@ ENV MODE="run" \
 COPY root/qemu-aarch64-static /usr/bin/
 COPY --from=arm64v8/debian:buster-slim /usr/bin/split /usr/local/bin/split
 COPY root/entrypoint /usr/local/sbin/entrypoint
-# COPY root/split /usr/local/bin/split
 COPY root/easyepg.process /usr/local/bin/easyepg.process
 COPY root/easyepg.install /usr/local/bin/easyepg.install
 COPY root/easyepg.update /usr/local/bin/easyepg.update

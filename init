@@ -170,12 +170,10 @@ if [ ! -z "${SOCKET}" ]; then
 fi
 
 log "Stopping container..."
-# docker ps -a -q --filter ancestor="qoopido/easyepg.minimal" --format="{{.ID}}" | xargs -I {} docker stop {} > /dev/null
-docker ps --format "{{.Image}}" | grep "qoopido/easyepg.minimal" | xargs -I {} docker stop {} > /dev/null
+docker ps --format "{{.Image}} {{.ID}}" | grep "qoopido/easyepg.minimal" | cut -d " " -f 2 | xargs -I {} docker stop {} > /dev/null
 
 log "Removing old container..."
-# docker ps -a -q --filter ancestor="qoopido/easyepg.minimal" --format="{{.ID}}" | xargs -I {} docker rm --force {} > /dev/null
-docker ps -a --format "{{.Image}}" | grep "qoopido/easyepg.minimal" | xargs -I {} docker rm --force {} > /dev/null
+docker ps -a --format "{{.Image}} {{.ID}}" | grep "qoopido/easyepg.minimal" | cut -d " " -f 2 | xargs -I {} docker rm --force {} > /dev/null
 
 log "Removing old image..."
 docker images --format "{{.Repository}}:{{.Tag}}" | grep "qoopido/easyepg.minimal" | xargs -I {} docker rmi --force {} > /dev/null
