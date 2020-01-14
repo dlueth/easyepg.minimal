@@ -5,7 +5,7 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.name="easyepg.minimal"
 
 ARG BUILD_DEPENDENCIES="build-essential cpanminus"
-ARG DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl file wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping"
+ARG DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl file wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping zip"
 
 ENV MODE="run" \
     USER_ID="1099" \
