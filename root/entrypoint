@@ -34,12 +34,8 @@ if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
-if [[ ! -f /easyepg/update.sh ]]; then
-  /usr/local/bin/easyepg.install
-else
-  if [[ "${UPDATE}" = "yes" ]]; then
-    /usr/local/bin/easyepg.update
-  fi
+if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
+  /usr/local/bin/easyepg.update
 fi
 
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime

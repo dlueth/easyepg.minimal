@@ -5,7 +5,7 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.name="easyepg.minimal"
 
 ARG BUILD_DEPENDENCIES="build-base cmake musl-dev patch gettext-dev perl-dev perl-app-cpanminus"
-ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils perl perl-utils perl-doc jq php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl"
+ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils perl perl-utils perl-doc jq php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip"
 
 ENV MODE="run" \
     USER_ID="1099" \
@@ -27,7 +27,6 @@ ENV MODE="run" \
 COPY --from=amd64/debian:buster-slim /usr/bin/split /usr/local/bin/split
 COPY root/entrypoint /usr/local/sbin/entrypoint
 COPY root/easyepg.process /usr/local/bin/easyepg.process
-COPY root/easyepg.install /usr/local/bin/easyepg.install
 COPY root/easyepg.update /usr/local/bin/easyepg.update
 COPY root/packages.install /usr/local/sbin/packages.install
 COPY root/packages.cleanup /usr/local/sbin/packages.cleanup
@@ -70,7 +69,6 @@ RUN apk update \
     && chmod +x /usr/local/sbin/entrypoint \
     && chmod +x /usr/local/bin/split \
     && chmod +x /usr/local/bin/easyepg.process \
-    && chmod +x /usr/local/bin/easyepg.install \
     && chmod +x /usr/local/bin/easyepg.update \
     && chmod +x /usr/local/sbin/packages.install \
     && chmod +x /usr/local/sbin/packages.cleanup \

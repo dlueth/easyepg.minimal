@@ -28,7 +28,6 @@ __CROSS_COPY root/qemu-__QEMU_ARCH__-static /usr/bin/
 COPY --from=__BASE_ARCH__/debian:buster-slim /usr/bin/split /usr/local/bin/split
 COPY root/entrypoint /usr/local/sbin/entrypoint
 COPY root/easyepg.process /usr/local/bin/easyepg.process
-COPY root/easyepg.install /usr/local/bin/easyepg.install
 COPY root/easyepg.update /usr/local/bin/easyepg.update
 COPY root/packages.install /usr/local/sbin/packages.install
 COPY root/packages.cleanup /usr/local/sbin/packages.cleanup
@@ -71,7 +70,6 @@ RUN apk update \
     && chmod +x /usr/local/sbin/entrypoint \
     && chmod +x /usr/local/bin/split \
     && chmod +x /usr/local/bin/easyepg.process \
-    && chmod +x /usr/local/bin/easyepg.install \
     && chmod +x /usr/local/bin/easyepg.update \
     && chmod +x /usr/local/sbin/packages.install \
     && chmod +x /usr/local/sbin/packages.cleanup \
