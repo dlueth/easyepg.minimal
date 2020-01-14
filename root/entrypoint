@@ -70,7 +70,8 @@ case "${MODE}" in
     sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /etc/easyepg.cron
     sed -i "s/\${USERNAME}/${USERNAME}/" /etc/easyepg.cron
     crontab -u root /etc/easyepg.cron
-    exec /usr/sbin/crond -f -l 0
+    # leave exec out here on purpose as crond fiddles with process-ids itself
+    /usr/sbin/crond -f -l 0
     ;;
   *)
     exec tail -f /dev/null
