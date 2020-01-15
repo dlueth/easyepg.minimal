@@ -45,17 +45,19 @@ if ! getent passwd ${USER_ID}; then
   adduser -D -g "" -u ${USER_ID} -h /easyepg -s /bin/bash easyepg
 fi
 
-if ! getent group ${GROUP_ID}; then
-  GROUP_NAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w ${1:-16} | head -n 1)
+USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
 
-  addgroup -g ${GROUP_ID} ${GROUP_NAME}
-  addgroup easyepg ${GROUP_NAME}
+if ! getent group ${GROUP_ID}; then
+  GROUPNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w ${1:-16} | head -n 1)
+
+  addgroup -g ${GROUP_ID} ${GROUPNAME}
 fi
 
+GROUPNAME=$(getent group ${GROUP_ID} | cut -d: -f1)
+
+usermod -g ${GROUPNAME} ${USERNAME}
 chown -R ${USER_ID}:${GROUP_ID} /easyepg
 chown -R ${USER_ID}:${GROUP_ID} /tmp
-
-USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
 
 if [[ ! -z "${PACKAGES}" ]]; then
   /usr/local/sbin/packages.install
