@@ -15,7 +15,7 @@ writeSocket()
 
 if [[ "${MODE}" = "cron" ]] && [[ "${UPDATE}" = "yes" ]]; then
     echo "Updating easyepg"
-    /easyepg.update.sh
+    /usr/local/bin/easyepg.update
 fi
 
 echo "Cleaning up"

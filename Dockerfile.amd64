@@ -5,7 +5,7 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.name="easyepg.minimal"
 
 ARG BUILD_DEPENDENCIES="build-essential cpanminus"
-ARG DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl file wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping"
+ARG DEPENDENCIES="socat cron iproute2 nano procps phantomjs dialog curl file wget git libxml2-utils perl perl-doc jq php php-curl xml-twig-tools liblocal-lib-perl inetutils-ping zip unzip"
 
 ENV MODE="run" \
     USER_ID="1099" \
@@ -23,13 +23,12 @@ ENV MODE="run" \
     LC_ALL="en_US.UTF-8" \
     CLEANUP="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm"
 
-COPY root/entrypoint.sh /entrypoint.sh
-COPY root/process.sh /process.sh
-COPY root/easyepg.install.sh /easyepg.install.sh
-COPY root/easyepg.update.sh /easyepg.update.sh
-COPY root/packages.install.sh /packages.install.sh
-COPY root/packages.cleanup.sh /packages.cleanup.sh
-COPY root/easyepg.cron /easyepg.cron
+COPY root/entrypoint /usr/local/sbin/entrypoint
+COPY root/easyepg.process /usr/local/bin/easyepg.process
+COPY root/easyepg.update /usr/local/bin/easyepg.update
+COPY root/packages.install /usr/local/sbin/packages.install
+COPY root/packages.cleanup /usr/local/sbin/packages.cleanup
+COPY root/easyepg.cron /etc/easyepg.cron
 
 RUN apt-get -qy update \
     ### tweak some apt & dpkg settngs
@@ -52,6 +51,7 @@ RUN apt-get -qy update \
     && apt-get dist-upgrade -qy \
     ### install easyepg dependencies
     && apt-get install -qy ${BUILD_DEPENDENCIES} ${DEPENDENCIES} \
+    ### install cpan modules
     && cpan App:cpanminus \
     && cpanm install JSON \
     && cpanm install XML::Rules \
@@ -63,20 +63,21 @@ RUN apt-get -qy update \
     && cpanm install DateTime::Format::DateParse \
     && cpanm install DateTime::Format::Strptime \
     && cpanm install utf8 \
+    ### create necessary files/directories
     && mkdir -p /easyepg \
     && touch /xmltv.sock \
-    && chmod +x /entrypoint.sh \
-    && chmod +x /process.sh \
-    && chmod +x /easyepg.install.sh \
-    && chmod +x /easyepg.update.sh \
-    && chmod +x /packages.install.sh \
-    && chmod +x /packages.cleanup.sh \
-    && chmod 644 /easyepg.cron \
+    ### alter permissions
+    && chmod +x /usr/local/sbin/entrypoint \
+    && chmod +x /usr/local/bin/easyepg.process \
+    && chmod +x /usr/local/bin/easyepg.update \
+    && chmod +x /usr/local/sbin/packages.install \
+    && chmod +x /usr/local/sbin/packages.cleanup \
+    && chmod 644 /etc/easyepg.cron \
     ### cleanup
     && apt-get remove --purge -qy ${BUILD_DEPENDENCIES} \
-    && /packages.cleanup.sh
+    && /usr/local/sbin/packages.cleanup
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/usr/local/sbin/entrypoint" ]
 
 VOLUME /easyepg
 

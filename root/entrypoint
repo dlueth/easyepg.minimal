@@ -34,38 +34,39 @@ if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
-if [[ ! -f /easyepg/update.sh ]]; then
-  /easyepg.install.sh
-else
-  if [[ "${UPDATE}" = "yes" ]]; then
-    /easyepg.update.sh
-  fi
+if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
+  /usr/local/bin/easyepg.update
 fi
 
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata
 
-if ! grep -q ${GROUP_ID} /etc/group; then
-  groupadd --gid ${GROUP_ID} easyepg
-fi
-
 if ! getent passwd ${USER_ID}; then
-  useradd --uid ${USER_ID} --gid ${GROUP_ID} --home /easyepg --shell /bin/bash easyepg
+  useradd --uid ${USER_ID} --home /easyepg --shell /bin/nologin easyepg
 fi
-
-chown -R ${USER_ID}:${GROUP_ID} /easyepg
-chown -R ${USER_ID}:${GROUP_ID} /tmp
 
 USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
 
+if ! getent group ${GROUP_ID}; then
+  GROUPNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w ${1:-16} | head -n 1)
+
+  groupadd --gid ${GROUP_ID} ${GROUPNAME}
+fi
+
+GROUPNAME=$(getent group ${GROUP_ID} | cut -d: -f1)
+
+usermod -g ${GROUPNAME} ${USERNAME}
+chown -R ${USER_ID}:${GROUP_ID} /easyepg
+chown -R ${USER_ID}:${GROUP_ID} /tmp
+
 if [[ ! -z "${PACKAGES}" ]]; then
-  /packages.install.sh
-  /packages.cleanup.sh
+  /usr/local/sbin/packages.install
+  /usr/local/sbin/packages.cleanup
 fi
 
 case "${MODE}" in
   run)
-    su ${USERNAME} -c "TERM=xterm /process.sh"
+    su -s /bin/bash -c "TERM=xterm /usr/local/bin/easyepg.process" ${USERNAME}
     ;;
   cron)
     sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /easyepg.cron
