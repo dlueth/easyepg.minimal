@@ -2,6 +2,8 @@
 set -e
 set -f
 
+USERNAME="easyepg"
+
 if [[ -z "${MODE}" ]]; then
   MODE="run"
 fi
@@ -41,21 +43,13 @@ fi
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata
 
-if ! getent passwd ${USER_ID}; then
-  useradd --uid ${USER_ID} --home /easyepg --shell /bin/nologin easyepg
-fi
-
-USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
+echo "${USERNAME}:x:${USER_ID}:${GROUP_ID}:${USERNAME}:/:/sbin/nologin" >> /etc/passwd
+echo "${USERNAME}:!::0:::::" >> /etc/shadow
 
 if ! getent group ${GROUP_ID}; then
-  GROUPNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w ${1:-16} | head -n 1)
-
-  groupadd --gid ${GROUP_ID} ${GROUPNAME}
+  echo "${USERNAME}:x:${GROUP_ID}:" >> /etc/group
 fi
 
-GROUPNAME=$(getent group ${GROUP_ID} | cut -d: -f1)
-
-usermod -g ${GROUPNAME} ${USERNAME}
 chown -R ${USER_ID}:${GROUP_ID} /easyepg
 chown -R ${USER_ID}:${GROUP_ID} /tmp
 
