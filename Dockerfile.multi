@@ -1,11 +1,13 @@
-FROM __BASE_ARCH__/alpine:3.11.0 AS build
+#FROM __BASE_ARCH__/alpine:3.11.0 AS build
+FROM __BASE_ARCH__/php:7.4.1-cli-alpine3.11 AS build
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
       org.label-schema.name="easyepg.minimal"
 
 ARG BUILD_DEPENDENCIES="build-base cmake musl-dev patch gettext-dev perl-dev perl-app-cpanminus"
-ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils perl perl-utils perl-doc jq php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip"
+ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils perl perl-utils perl-doc jq perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip"
+#php php-curl
 
 ENV MODE="run" \
     USER_ID="1099" \
