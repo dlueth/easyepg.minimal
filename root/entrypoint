@@ -65,7 +65,7 @@ case "${MODE}" in
   cron)
     sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /etc/easyepg.cron
     sed -i "s/\${USERNAME}/${USERNAME}/" /etc/easyepg.cron
-    crontab -u root /easyepg.cron
+    crontab -u root /etc/easyepg.cron
     exec /usr/sbin/cron -f -l 0
     ;;
   *)
