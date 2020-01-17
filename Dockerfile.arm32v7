@@ -1,13 +1,11 @@
-#FROM arm32v7/alpine:3.11.0 AS build
-FROM arm32v7/php:7.4.1-cli-alpine3.11 AS build
+FROM arm32v7/alpine:3.11.2 AS build
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
       org.label-schema.name="easyepg.minimal"
 
 ARG BUILD_DEPENDENCIES="build-base cmake musl-dev patch gettext-dev perl-dev perl-app-cpanminus"
-ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils perl perl-utils perl-doc jq perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip"
-#php php-curl
+ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils jq perl perl-utils perl-doc php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip"
 
 ENV MODE="run" \
     USER_ID="1099" \
@@ -78,6 +76,11 @@ RUN apk update \
     && chmod 644 /etc/easyepg.cron \
     ### set alias
     && alias split="/usr/local/bin/split" \
+    ### disable ipv6
+    && echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf \
+    && echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf \
+    && echo "alias net-pf-10 off" >> /etc/modprobe.d/aliases.conf \
+    && echo "blacklist ipv6" >> /etc/modprobe.d/blacklist.conf \
     ### cleanup
     && apk del .build-dependencies \
     && find /usr/share/i18n/locales/musl -type f ! -name 'en_US.UTF-8' | xargs rm \
