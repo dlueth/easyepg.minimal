@@ -106,7 +106,7 @@ if [ -z "${BRANCH}" ] || [ "${BRANCH}" = "master" ]; then
 fi
 
 read -p "Easyepg.minimal docker tag [${DEFAULT_TAG}]: " TAG
-read -p "Additional APT packages [${DEFAULT_PACKAGES}]: " PACKAGES
+read -p "Additional OS packages [${DEFAULT_PACKAGES}]: " PACKAGES
 
 if [ -z "${VOLUME}" ]; then
   VOLUME=${DEFAULT_VOLUME}
@@ -170,10 +170,10 @@ if [ ! -z "${SOCKET}" ]; then
 fi
 
 log "Stopping container..."
-docker ps -a -q --filter ancestor="qoopido/easyepg.minimal" --format="{{.ID}}" | xargs -I {} docker stop {} > /dev/null
+docker ps --format "{{.Image}} {{.ID}}" | grep "qoopido/easyepg.minimal" | cut -d " " -f 2 | xargs -I {} docker stop {} > /dev/null
 
 log "Removing old container..."
-docker ps -a -q --filter ancestor="qoopido/easyepg.minimal" --format="{{.ID}}" | xargs -I {} docker rm --force {} > /dev/null
+docker ps -a --format "{{.Image}} {{.ID}}" | grep "qoopido/easyepg.minimal" | cut -d " " -f 2 | xargs -I {} docker rm --force {} > /dev/null
 
 log "Removing old image..."
 docker images --format "{{.Repository}}:{{.Tag}}" | grep "qoopido/easyepg.minimal" | xargs -I {} docker rmi --force {} > /dev/null
@@ -193,13 +193,13 @@ if [ -n "${CPU_LIMIT}" ]; then
   OPTIONS="${OPTIONS} --cpus ${CPU_LIMIT}"
 fi
 
-sh -c "docker create --name=easyepg.admin -e MODE=\"admin\" ${OPTIONS} qoopido/easyepg.minimal:${TAG} 1> /dev/null"
+sh -c "docker create -l easyepg.minimal --name=easyepg.admin -e MODE=\"admin\" ${OPTIONS} qoopido/easyepg.minimal:${TAG} 1> /dev/null"
 log "> easyepg.admin"
 
-sh -c "docker create --name=easyepg.run -e MODE=\"run\" ${OPTIONS} qoopido/easyepg.minimal:${TAG} 1> /dev/null"
+sh -c "docker create -l easyepg.minimal --name=easyepg.run -e MODE=\"run\" ${OPTIONS} qoopido/easyepg.minimal:${TAG} 1> /dev/null"
 log "> easyepg.run"
 
-sh -c "docker create --name=easyepg.cron -e MODE=\"cron\" --restart unless-stopped ${OPTIONS} qoopido/easyepg.minimal:${TAG} 1> /dev/null"
+sh -c "docker create -l easyepg.minimal --name=easyepg.cron -e MODE=\"cron\" --restart unless-stopped ${OPTIONS} qoopido/easyepg.minimal:${TAG} 1> /dev/null"
 log "> easyepg.cron"
 
 log "Finished!"
