@@ -36,28 +36,16 @@ if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
+sed '/ip6/d' /etc/hosts > /tmp/hosts
+cat /tmp/hosts > /etc/hosts
+rm -rf /tmp/hosts
+
 if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
   /usr/local/bin/easyepg.update
 fi
 
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 echo ${TIMEZONE} > /etc/timezone
-
-# if ! getent passwd ${USER_ID}; then
-#   adduser -D -g "" -u ${USER_ID} -h /easyepg -s /bin/bash easyepg
-# fi
-#
-# USERNAME=$(getent passwd ${USER_ID} | cut -d: -f1)
-#
-# if ! getent group ${GROUP_ID}; then
-#   GROUPNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w ${1:-16} | head -n 1)
-#
-#   addgroup -g ${GROUP_ID} ${GROUPNAME}
-# fi
-#
-# GROUPNAME=$(getent group ${GROUP_ID} | cut -d: -f1)
-#
-# usermod -g ${GROUPNAME} ${USERNAME}
 
 echo "${USERNAME}:x:${USER_ID}:${GROUP_ID}:${USERNAME}:/:/sbin/nologin" >> /etc/passwd
 echo "${USERNAME}:!::0:::::" >> /etc/shadow
