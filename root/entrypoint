@@ -36,17 +36,26 @@ if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
+# tweak some network related things
 sed '/ip6/d' /etc/hosts > /tmp/hosts
 cat /tmp/hosts > /etc/hosts
 rm -rf /tmp/hosts
 
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+echo "options use-vc" >> /etc/resolv.conf
+# echo "options use-vc ndots:0" >> /etc/resolv.conf
+
+# install easyepg
 if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
   /usr/local/bin/easyepg.update
 fi
 
+# set timezone
 ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 echo ${TIMEZONE} > /etc/timezone
 
+# add/modify user/group
 echo "${USERNAME}:x:${USER_ID}:${GROUP_ID}:${USERNAME}:/:/sbin/nologin" >> /etc/passwd
 echo "${USERNAME}:!::0:::::" >> /etc/shadow
 
@@ -54,9 +63,11 @@ if ! getent group ${GROUP_ID}; then
   echo "${USERNAME}:x:${GROUP_ID}:" >> /etc/group
 fi
 
+# fix permissions
 chown -R ${USER_ID}:${GROUP_ID} /easyepg
 chown -R ${USER_ID}:${GROUP_ID} /tmp
 
+# install packages
 if [[ ! -z "${PACKAGES}" ]]; then
   /usr/local/sbin/packages.install
   /usr/local/sbin/packages.cleanup

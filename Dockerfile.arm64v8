@@ -1,4 +1,4 @@
-FROM arm64v8/alpine:3.11.2 AS build
+FROM arm64v8/alpine:3.11.3 AS build
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
@@ -76,11 +76,6 @@ RUN apk update \
     && chmod 644 /etc/easyepg.cron \
     ### set alias
     && alias split="/usr/local/bin/split" \
-    ### disable ipv6
-    && echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf \
-    && echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf \
-    && echo "alias net-pf-10 off" >> /etc/modprobe.d/aliases.conf \
-    && echo "blacklist ipv6" >> /etc/modprobe.d/blacklist.conf \
     ### cleanup
     && apk del .build-dependencies \
     && find /usr/share/i18n/locales/musl -type f ! -name 'en_US.UTF-8' | xargs rm \
