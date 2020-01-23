@@ -31,6 +31,7 @@ COPY root/easyepg.update /usr/local/bin/easyepg.update
 COPY root/packages.install /usr/local/sbin/packages.install
 COPY root/packages.cleanup /usr/local/sbin/packages.cleanup
 COPY root/easyepg.cron /etc/easyepg.cron
+COPY root/env /usr/local/bin/env
 
 RUN apk update \
     && apk upgrade --no-cache \
@@ -72,9 +73,15 @@ RUN apk update \
     && chmod +x /usr/local/bin/easyepg.update \
     && chmod +x /usr/local/sbin/packages.install \
     && chmod +x /usr/local/sbin/packages.cleanup \
+    && chmod +x /usr/local/bin/env \
     && chmod 644 /etc/easyepg.cron \
     ### set alias
     && alias split="/usr/local/bin/split" \
+    ### alter DNS resolution
+    && sed '/hosts/d' /etc/nsswitch.conf > /tmp/nsswitch.conf \
+    && cat /tmp/nsswitch.conf > /etc/nsswitch.conf \
+    && rm -rf /tmp/nsswitch.conf \
+    && echo "hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4" >> /etc/nsswitch.conf \
     ### cleanup
     && apk del .build-dependencies \
     && find /usr/share/i18n/locales/musl -type f ! -name 'en_US.UTF-8' | xargs rm \
