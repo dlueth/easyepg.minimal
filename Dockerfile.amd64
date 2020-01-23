@@ -72,7 +72,6 @@ RUN apk update \
     && chmod +x /usr/local/bin/easyepg.update \
     && chmod +x /usr/local/sbin/packages.install \
     && chmod +x /usr/local/sbin/packages.cleanup \
-    && chmod +x /usr/local/bin/env \
     && chmod 644 /etc/easyepg.cron \
     ### set alias
     && alias split="/usr/local/bin/split" \
