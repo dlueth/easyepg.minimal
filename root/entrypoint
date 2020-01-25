@@ -36,6 +36,25 @@ if [[ -z "${BRANCH}" ]]; then
   BRANCH="master"
 fi
 
+# handle persistance of environment
+if [[ -f /easyepg/.env ]]; then
+  if [[ -s /easyepg/.env ]]; then
+    source /easyepg/.env
+  else
+    cat /dev/null > /easyepg/.env
+
+    echo "export USER_ID=\"${USER_ID}\"" >> /easyepg/.env
+    echo "export GROUP_ID=\"${GROUP_ID}\"" >> /easyepg/.env
+    echo "export MODE=\"${MODE}\"" >> /easyepg/.env
+    echo "export TIMEZONE=\"${TIMEZONE}\"" >> /easyepg/.env
+    echo "export FREQUENCY=\"${FREQUENCY}\"" >> /easyepg/.env
+    echo "export UPDATE=\"${UPDATE}\"" >> /easyepg/.env
+    echo "export REPO=\"${REPO}\"" >> /easyepg/.env
+    echo "export BRANCH=\"${BRANCH}\"" >> /easyepg/.env
+    echo "export PACKAGES=\"${PACKAGES}\"" >> /easyepg/.env
+  fi
+fi
+
 # install easyepg
 if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
   /usr/local/bin/easyepg.update
