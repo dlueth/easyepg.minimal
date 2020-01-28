@@ -22,7 +22,7 @@ ENV MODE="run" \
     LANG="en_US.UTF-8" \
     LC_ALL="en_US.UTF-8" \
     CURL_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt" \
-    CLEANUP="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm"
+    CLEANUP="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/* /usr/share/doc/* /usr/share/man/* /usr/share/info/* /usr/share/locale/* /root/.cpan /root/.cpanm"
 
 COPY root/entrypoint /usr/local/sbin/entrypoint
 COPY root/easyepg.process /usr/local/bin/easyepg.process
@@ -31,16 +31,28 @@ COPY root/packages.install /usr/local/sbin/packages.install
 COPY root/packages.cleanup /usr/local/sbin/packages.cleanup
 COPY root/easyepg.cron /etc/easyepg.cron
 
-RUN apt-get -qy update \
+RUN \
     ### tweak some apt & dpkg settngs
+    echo "force-unsafe-io" >> /etc/dpkg/dpkg.cfg.d/docker-apt-speedup \
     && echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
     && echo "APT::Install-Suggests "0";" >> /etc/apt/apt.conf.d/docker-noinstall-suggests \
+    && echo "Acquire::GzipIndexes "true";" >> /etc/apt/apt.conf.d/docker-gzip-indexes \
+    && echo "Acquire::CompressionTypes::Order:: "gz";" >> /etc/apt/apt.conf.d/docker-gzip-indexes \
+    && echo "Apt::AutoRemove::SuggestsImportant "false";" >> /etc/apt/apt.conf.d/docker-autoremove-suggests \
     && echo "Dir::Cache "";" >> /etc/apt/apt.conf.d/docker-nocache \
     && echo "Dir::Cache::archives "";" >> /etc/apt/apt.conf.d/docker-nocache \
+    && echo "Acquire::Languages "none";" >> /etc/apt/apt.conf.d/docker-nolanguages \
     && echo "path-exclude=/usr/share/locale/*" >> /etc/dpkg/dpkg.cfg.d/docker-nolocales \
     && echo "path-exclude=/usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/docker-noman \
     && echo "path-exclude=/usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
     && echo "path-include=/usr/share/doc/*/copyright" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
+    && echo "DPkg::Post-Invoke { ${aptGetClean} };" >> /etc/apt/apt.conf.d/docker-clean \
+    && echo "APT::Update::Post-Invoke { ${aptGetClean} };" >> /etc/apt/apt.conf.d/docker-clean \
+    && echo "Dir::Cache::pkgcache "";" >> /etc/apt/apt.conf.d/docker-clean \
+    && echo "Dir::Cache::srcpkgcache "";" >> /etc/apt/apt.conf.d/docker-clean \
+    ### update system
+    && apt-get -qy update \
+    && apt-get dist-upgrade -qy -o Dpkg::Options::="--force-confdef" \
     ### install basic packages
     && apt-get install -qy apt-utils locales tzdata \
     ### limit locale to en_US.UTF-8
@@ -48,8 +60,6 @@ RUN apt-get -qy update \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 \
     && locale-gen --purge en_US.UTF-8 \
-    ### run dist-upgrade
-    && apt-get dist-upgrade -qy \
     ### install easyepg dependencies
     && apt-get install -qy ${BUILD_DEPENDENCIES} ${DEPENDENCIES} \
     ### install cpan modules
