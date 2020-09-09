@@ -1,4 +1,4 @@
-name: Build & publish
+name: Debian
 on:
   push:
     branches:
