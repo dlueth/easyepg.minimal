@@ -1,4 +1,4 @@
-FROM __BASE_ARCH__/alpine:3.11.3 AS build
+FROM __BASE_ARCH__/alpine:3.12.0 AS build
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
@@ -22,6 +22,7 @@ ENV MODE="run" \
     LC_ALL="en_US.UTF-8" \
     CLEANUP="/var/cache/apk/* /tmp/* /var/tmp/* /var/log/* /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm" \
     PHANTOMJS_VERSION="2.1.1" \
+    PHANTOMIZED_VERSION="2.1.1a" \
     CURL_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt" \
     MUSL_LOCPATH="/usr/share/i18n/locales/musl"
 
@@ -40,30 +41,28 @@ RUN apk update \
     && apk add --update --no-cache ${DEPENDENCIES} \
     ### install locales
     && cd /tmp \
-    && git clone https://gitlab.com/rilian-la-te/musl-locales \
+    && git clone https://gitlab.com/rilian-la-te/musl-locales.git/ \
     && cd musl-locales \
     && cmake -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . \
     && make \
     && make install \
     && cd / \
     ### install phantomjs
-    && curl -Ls "https://github.com/dustinblackman/phantomized/releases/download/${PHANTOMJS_VERSION}/dockerized-phantomjs.tar.gz" | tar xz -C / \
+    && curl -Ls "https://github.com/dustinblackman/phantomized/releases/download/${PHANTOMIZED_VERSION}/dockerized-phantomjs.tar.gz" | tar xz -C / \
     && curl -k -Ls https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-x86_64.tar.bz2  | tar -jxvf - -C /tmp \
     && cp /tmp/phantomjs-${PHANTOMJS_VERSION}-linux-x86_64/bin/phantomjs /usr/local/bin/phantomjs \
     ### install cpan modules
-    && cpan App:cpanminus \
-    && cpanm install JSON \
-    # && cpanm install local::lib \
-    && cpanm install XML::Rules \
-    && cpanm install XML::DOM \
-    && cpanm install HTML::TreeBuilder \
-    && cpanm install Data::Dumper \
-    && cpanm install Time::Piece \
-    && cpanm install Time::Seconds \
-    && cpanm install DateTime \
-    && cpanm install DateTime::Format::DateParse \
-    && cpanm install DateTime::Format::Strptime \
-    && cpanm install utf8 \
+    && cpan -T App:cpanminus \
+    && cpanm install -n JSON \
+    && cpanm install -n XML::Rules \
+    && cpanm install -n XML::DOM \
+    && cpanm install -n HTML::TreeBuilder \
+    && cpanm install -n Data::Dumper \
+    && cpanm install -n Time::Piece \
+    && cpanm install -n Time::Seconds \
+    && cpanm install -n DateTime \
+    && cpanm install -n DateTime::Format::DateParse \
+    && cpanm install -n DateTime::Format::Strptime \
     ### create necessary files/directories
     && mkdir -p /easyepg \
     && touch /xmltv.sock \
