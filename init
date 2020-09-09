@@ -29,7 +29,7 @@ DEFAULT_FREQUENCY="0 2 * * *"
 DEFAULT_UPDATE="no"
 DEFAULT_REPO="sunsettrack4"
 DEFAULT_BRANCH="master"
-DEFAULT_TAG="latest"
+DEFAULT_TAG="latest-alpine"
 DEFAULT_PACKAGES=""
 
 if [ -z "${NO_CPU_LIMIT}" ]; then
