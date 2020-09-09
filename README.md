@@ -1,5 +1,4 @@
 [![PayPal.Me donation](https://img.shields.io/static/v1?label=PayPal.Me&message=Donate&color=green&logo=paypal)](https://www.paypal.me/qoopido)
-![GitHub release](https://img.shields.io/github/release/dlueth/easyepg.minimal.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/qoopido/easyepg.minimal.svg)
 
 # easyepg.minimal

@@ -37,23 +37,43 @@ if [[ -z "${BRANCH}" ]]; then
 fi
 
 # handle persistance of environment
-if [[ -f /easyepg/.env ]]; then
-  if [[ -s /easyepg/.env ]]; then
-    source /easyepg/.env
-  else
-    cat /dev/null > /easyepg/.env
+# if [[ -f /easyepg/.env ]]; then
+#   echo "> .env file exists"
+#
+#   if [[ -s /easyepg/.env ]]; then
+#     echo "  > .env file not empty"
+#     echo "  > importing settings from .env"
+#     source /easyepg/.env
+#   else
+#     echo "  > .env file empty"
+#     echo "  > exporting settings to .env"
+#
+#     cat /dev/null > /easyepg/.env
+#
+#     echo "export USER_ID=\"${USER_ID}\"" >> /easyepg/.env
+#     echo "export GROUP_ID=\"${GROUP_ID}\"" >> /easyepg/.env
+#     echo "export MODE=\"${MODE}\"" >> /easyepg/.env
+#     echo "export TIMEZONE=\"${TIMEZONE}\"" >> /easyepg/.env
+#     echo "export FREQUENCY=\"${FREQUENCY}\"" >> /easyepg/.env
+#     echo "export UPDATE=\"${UPDATE}\"" >> /easyepg/.env
+#     echo "export REPO=\"${REPO}\"" >> /easyepg/.env
+#     echo "export BRANCH=\"${BRANCH}\"" >> /easyepg/.env
+#     echo "export PACKAGES=\"${PACKAGES}\"" >> /easyepg/.env
+#   fi
+# else
+#   echo "> .env file not found"
+# fi
 
-    echo "export USER_ID=\"${USER_ID}\"" >> /easyepg/.env
-    echo "export GROUP_ID=\"${GROUP_ID}\"" >> /easyepg/.env
-    echo "export MODE=\"${MODE}\"" >> /easyepg/.env
-    echo "export TIMEZONE=\"${TIMEZONE}\"" >> /easyepg/.env
-    echo "export FREQUENCY=\"${FREQUENCY}\"" >> /easyepg/.env
-    echo "export UPDATE=\"${UPDATE}\"" >> /easyepg/.env
-    echo "export REPO=\"${REPO}\"" >> /easyepg/.env
-    echo "export BRANCH=\"${BRANCH}\"" >> /easyepg/.env
-    echo "export PACKAGES=\"${PACKAGES}\"" >> /easyepg/.env
-  fi
-fi
+echo "> settings used"
+echo "  > USER_ID:   \"${USER_ID}\""
+echo "  > GROUP_ID:  \"${GROUP_ID}\""
+echo "  > MODE:      \"${MODE}\""
+echo "  > TIMEZONE:  \"${TIMEZONE}\""
+echo "  > FREQUENCY: \"${FREQUENCY}\""
+echo "  > UPDATE:    \"${UPDATE}\""
+echo "  > REPO:      \"${REPO}\""
+echo "  > BRANCH:    \"${BRANCH}\""
+echo "  > PACKAGES:  \"${PACKAGES}\""
 
 if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
   /usr/local/bin/easyepg.update
