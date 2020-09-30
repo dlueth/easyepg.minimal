@@ -54,6 +54,8 @@ RUN apk update \
     ### install cpan modules
     && cpan -T App:cpanminus \
     && cpanm install -n utf8 \
+    && cpanm install -n strict \
+    && cpanm install -n warnings \
     && cpanm install -n JSON \
     && cpanm install -n XML::Rules \
     && cpanm install -n XML::DOM \
@@ -64,6 +66,7 @@ RUN apk update \
     && cpanm install -n DateTime \
     && cpanm install -n DateTime::Format::DateParse \
     && cpanm install -n DateTime::Format::Strptime \
+    && cpanm install -n Term::ANSIColor \
     ### create necessary files/directories
     && mkdir -p /easyepg \
     && touch /xmltv.sock \
