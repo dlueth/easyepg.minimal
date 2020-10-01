@@ -28,7 +28,6 @@ ENV MODE="run" \
 
 COPY root/qemu-arm-static /usr/bin/
 COPY --from=arm32v7/ubuntu:latest /usr/bin/split /usr/local/bin/split
-COPY --from=arm32v7/ubuntu:latest /usr/bin/ps /bin/ps
 COPY root/entrypoint /usr/local/sbin/entrypoint
 COPY root/easyepg.process /usr/local/bin/easyepg.process
 COPY root/easyepg.update /usr/local/bin/easyepg.update
@@ -82,6 +81,11 @@ RUN apk update \
     && apk del .build-dependencies \
     && find /usr/share/i18n/locales/musl -type f ! -name 'en_US.UTF-8' | xargs rm \
     && /usr/local/sbin/packages.cleanup
+
+COPY --from=arm32v7/ubuntu:latest /usr/bin/ps /bin/ps
+
+RUN chmod +x /bin/ps \
+    && alias ps="/bin/ps"
 
 ENTRYPOINT [ "/usr/local/sbin/entrypoint" ]
 
