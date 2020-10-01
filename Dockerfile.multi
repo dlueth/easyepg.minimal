@@ -5,7 +5,7 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.name="easyepg.minimal"
 
 ARG BUILD_DEPENDENCIES="build-base cmake musl-dev patch gettext-dev perl-dev perl-app-cpanminus"
-ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils jq perl perl-utils perl-doc php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip ca-certificates"
+ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano dialog curl file wget git libxml2-utils jq perl perl-utils perl-doc php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip ca-certificates"
 
 ENV MODE="run" \
     USER_ID="1099" \
@@ -27,7 +27,8 @@ ENV MODE="run" \
     MUSL_LOCPATH="/usr/share/i18n/locales/musl"
 
 __CROSS_COPY root/qemu-__QEMU_ARCH__-static /usr/bin/
-COPY --from=__BASE_ARCH__/debian:buster-slim /usr/bin/split /usr/local/bin/split
+COPY --from=__BASE_ARCH__/ubuntu:latest /usr/bin/split /usr/local/bin/split
+COPY --from=__BASE_ARCH__/ubuntu:latest /usr/bin/ps /bin/ps
 COPY root/entrypoint /usr/local/sbin/entrypoint
 COPY root/easyepg.process /usr/local/bin/easyepg.process
 COPY root/easyepg.update /usr/local/bin/easyepg.update
@@ -54,8 +55,6 @@ RUN apk update \
     ### install cpan modules
     && cpan -T App:cpanminus \
     && cpanm install -n utf8 \
-    && cpanm install -n strict \
-    && cpanm install -n warnings \
     && cpanm install -n JSON \
     && cpanm install -n XML::Rules \
     && cpanm install -n XML::DOM \
@@ -66,7 +65,6 @@ RUN apk update \
     && cpanm install -n DateTime \
     && cpanm install -n DateTime::Format::DateParse \
     && cpanm install -n DateTime::Format::Strptime \
-    && cpanm install -n Term::ANSIColor \
     ### create necessary files/directories
     && mkdir -p /easyepg \
     && touch /xmltv.sock \
