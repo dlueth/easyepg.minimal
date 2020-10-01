@@ -5,7 +5,7 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.name="easyepg.minimal"
 
 ARG BUILD_DEPENDENCIES="build-base cmake musl-dev patch gettext-dev perl-dev perl-app-cpanminus"
-ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano dialog curl file wget git libxml2-utils jq perl perl-utils perl-doc php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip ca-certificates"
+ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils jq perl perl-utils perl-doc php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip ca-certificates"
 
 ENV MODE="run" \
     USER_ID="1099" \
