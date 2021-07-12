@@ -1,5 +1,6 @@
 name: Debian
-on: workflow_dispatch
+on:
+  workflow_dispatch:
   push:
     branches:
       - master
