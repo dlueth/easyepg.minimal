@@ -1,5 +1,6 @@
 name: Alpine
 on:
+  workflow_dispatch:
   push:
     branches:
       - alpine
