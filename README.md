@@ -77,6 +77,7 @@ docker run \
   -e UPDATE="yes" \
   -e REPO="sunsettrack4" \
   -e BRANCH="master" \
+  -e XMLTV_SOCKET_PATH="/xmltv.sock" \
   -v {EASYEPG_STORAGE}:/easyepg \
   -v {XML_STORAGE}:/easyepg/xml \
   -v {XMLTV_SOCKET}:/xmltv.sock \
@@ -99,6 +100,7 @@ The available parameters in detail:
 | `UPDATE` | yes | yes, no | yes | Flag whether to update easyepg on container start |
 | `REPO` | yes | sunsettrack4, DeBaschdi | sunsettrack4 | The repo to update/install easyepg from |
 | `BRANCH` | yes | [string] | master | The branch to update/install easyepg from |
+| `XMLTV_SOCKET_PATH` | yes | [string] | /xmltv.sock | Path to the xmltv socket to write to |
 
 Frequently used volumes:
  
@@ -126,4 +128,3 @@ If you decide to remove `XML_STORAGE` the finished XML files can be found in the
  │ │ │ │ │
  * * * * *  /command/to/execute
 ```
-
