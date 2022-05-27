@@ -39,7 +39,7 @@ fi
 read -p "Storage location [${DEFAULT_VOLUME}]: " VOLUME
 while true; do
   if [ -n "${DEFAULT_SOCKET}" ]; then
-    read -p "Use local xmltv.sock [Y/n]: " yn
+    read -p "Use existing local xmltv.sock [Y/n]: " yn
 
     case ${yn} in
       [Nn]*)
@@ -51,7 +51,7 @@ while true; do
       ;;
     esac
   else
-    read -p "Use local xmltv.sock [y/N]: " yn
+    read -p "Use custom location/directory for xmltv.sock [y/N]: " yn
 
     case ${yn} in
       [Yy]*)
@@ -157,9 +157,11 @@ if [ -z "${VOLUME}" ] || [ ! -d "${VOLUME}" ] || [ ! -w "${VOLUME}" ]; then
   exit 1
 fi
 
-if [ ! -z "${SOCKET}" ] && [ ! -S "${SOCKET}" ]; then
-  log "Socket location incorrect"
-  exit 1
+if [ ! -z "${SOCKET}" ]; then
+  if [ ! -S "${SOCKET}" ] || [ ! -d "${SOCKET}" ]; then
+    log "Socket location incorrect"
+    exit 1
+  fi
 fi
 
 # make paths absolute for docker
@@ -186,7 +188,13 @@ log "Creating new container..."
 OPTIONS="--tmpfs /tmp --tmpfs /var/log -e USER_ID=\"${USER_ID}\" -e GROUP_ID=\"${GROUP_ID}\" -e TIMEZONE=\"${TIMEZONE}\" -e FREQUENCY=\"${FREQUENCY}\" -e UPDATE=\"${UPDATE}\" -e REPO=\"${REPO}\" -e BRANCH=\"${BRANCH}\" -e PACKAGES=\"${PACKAGES}\" -v ${VOLUME}:/easyepg"
 
 if [ -n "${SOCKET}" ]; then
-  OPTIONS="${OPTIONS} -v ${SOCKET}:/xmltv.sock"
+  if [ -S "${SOCKET}" ]; then
+    OPTIONS="${OPTIONS} -v ${SOCKET}:/xmltv.sock"
+  fi
+
+  if [ -d "${SOCKET}" ]; then
+    OPTIONS="${OPTIONS} -v ${SOCKET}:/xmltv"
+  fi
 fi
 
 if [ -n "${CPU_LIMIT}" ]; then

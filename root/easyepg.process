@@ -1,13 +1,22 @@
 #!/bin/bash
 
 PWD=$(pwd)
+SOCKET=""
+
+if [[ -S /xmltv.sock ]]; then
+  SOCKET="/xmltv.sock"
+fi
+
+if [[ -d /xmltv ]]; then
+  SOCKET=$(find ~+/xmltv -type s -name "xmltv.sock" 2> /dev/null)
+fi
 
 writeSocket()
 {
   FILES=$(find /easyepg/xml -type f -name "*.xml" -printf "%T@ %p\n" | sort -n | cut -d " " -f 2)
 
   while read -r FILE; do
-    cat ${FILE} | socat - UNIX-CONNECT:/xmltv.sock
+    cat ${FILE} | socat - UNIX-CONNECT:${SOCKET}
 
     echo "> ${FILE}"
   done <<< "${FILES}"
@@ -24,8 +33,8 @@ rm -rf /easyepg/xml/*
 echo "Running easyepg"
 cd /easyepg && /bin/bash /easyepg/epg.sh
 
-if [[ -S /xmltv.sock ]]; then
-  echo "Writing to xmltv.sock..."
+if [[ ! -z "${SOCKET}" ]]; then
+  echo "Writing to ${SOCKET}..."
 
   writeSocket
   sleep 300

@@ -80,6 +80,7 @@ docker run \
   -v {EASYEPG_STORAGE}:/easyepg \
   -v {XML_STORAGE}:/easyepg/xml \
   -v {XMLTV_SOCKET}:/xmltv.sock \
+  -v {XMLTV_DIRECTORY}:/xmltv \
   --name=easyepg \
   --restart unless-stopped \
   --tmpfs /tmp \
@@ -102,11 +103,12 @@ The available parameters in detail:
 
 Frequently used volumes:
  
-| Volume | Optional | Description |
-| ---- | --- | --- |
-| `EASYEPG_STORAGE` | no | The directory to persist easyepg to |
-| `XML_STORAGE` | yes | The directory to store the finished XML files in |
-| `XMLTV_SOCKET` | yes | The socket to automatically write finished XMLs to |
+| Volume            | Optional | Description                                             |
+|-------------------| --- |---------------------------------------------------------|
+| `EASYEPG_STORAGE` | no | The directory to persist easyepg to                     |
+| `XML_STORAGE`     | yes | The directory to store the finished XML files in        |
+| `XMLTV_SOCKET`    | yes | The socket to automatically write finished XMLs to      |
+| `XMLTV_DIRECTORY` | yes | The directory to alternatively expect an `xmltv.sock` in  |
 
 When passing volumes please replace the name including the surrounding curly brackets with existing absolute paths with correct permissions.
 
