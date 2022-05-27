@@ -8,7 +8,7 @@ if [[ -S /xmltv.sock ]]; then
 fi
 
 if [[ -d /xmltv ]]; then
-  SOCKET=$(find ~+/xmltv -type s -name "xmltv.sock" 2> /dev/null)
+  SOCKET=$(find /xmltv -type s -name "xmltv.sock" 2> /dev/null)
 fi
 
 writeSocket()
