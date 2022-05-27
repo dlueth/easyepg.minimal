@@ -158,7 +158,7 @@ if [ -z "${VOLUME}" ] || [ ! -d "${VOLUME}" ] || [ ! -w "${VOLUME}" ]; then
 fi
 
 if [ ! -z "${SOCKET}" ]; then
-  if [ ! -S "${SOCKET}" ] || [ ! -d "${SOCKET}" ]; then
+  if [ ! -S "${SOCKET}" ] && [ ! -d "${SOCKET}" ]; then
     log "Socket location incorrect"
     exit 1
   fi
