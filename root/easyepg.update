@@ -3,7 +3,7 @@
 PWD=$(pwd)
 
 rm -rf /easyepg/easyepg
-git clone https://github.com/${REPO}.git /easyepg/easyepg
+git clone --depth 1 --branch ${BRANCH} https://github.com/${REPO}.git /easyepg/easyepg
 
 cd /easyepg/easyepg
 git checkout ${BRANCH}
