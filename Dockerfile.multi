@@ -1,91 +1,46 @@
-FROM __BASE_ARCH__/alpine:3.12.0 AS build
+FROM __BASE_ARCH__/alpine:3.16.2 AS build
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
       org.label-schema.name="easyepg.minimal"
 
-ARG BUILD_DEPENDENCIES="build-base cmake musl-dev patch gettext-dev perl-dev perl-app-cpanminus"
-ARG DEPENDENCIES="bash ncurses socat dcron iproute2 nano procps dialog curl file wget git libxml2-utils jq perl perl-utils perl-doc php php-curl perl-xml-twig perl-date-format perl-datetime iputils tzdata libintl zip ca-certificates"
+ARG DEPENDENCIES="bash socat python3 git"
 
-ENV MODE="run" \
-    USER_ID="1099" \
+ENV USER_ID="1099" \
     GROUP_ID="1099" \
     TIMEZONE="Europe/Berlin" \
-    FREQUENCY="0 2 * * *" \
     UPDATE="yes" \
-    REPO="sunsettrack4" \
-    BRANCH="master" \
-    PACKAGES="" \
+    REPO="sunsettrack4/script.service.easyepg-lite" \
+    BRANCH="main" \
     TERM=xterm \
     LANGUAGE="en_US.UTF-8" \
     LANG="en_US.UTF-8" \
     LC_ALL="en_US.UTF-8" \
     CLEANUP="/var/cache/apk/* /tmp/* /var/tmp/* /var/log/* /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm" \
-    PHANTOMJS_VERSION="2.1.1" \
-    PHANTOMIZED_VERSION="2.1.1a" \
-    CURL_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt" \
-    MUSL_LOCPATH="/usr/share/i18n/locales/musl"
+    PYTHONUNBUFFERED=1
 
 __CROSS_COPY root/qemu-__QEMU_ARCH__-static /usr/bin/
-COPY --from=__BASE_ARCH__/ubuntu:latest /usr/bin/split /usr/local/bin/split
 COPY root/entrypoint /usr/local/sbin/entrypoint
 COPY root/easyepg.process /usr/local/bin/easyepg.process
 COPY root/easyepg.update /usr/local/bin/easyepg.update
-COPY root/packages.install /usr/local/sbin/packages.install
-COPY root/packages.cleanup /usr/local/sbin/packages.cleanup
-COPY root/easyepg.cron /etc/easyepg.cron
 
-RUN apk update \
+RUN sed -e 's;^#http\(.*\)/v3.16/community;http\1/v3.16/community;g' -i /etc/apk/repositories \
+    && apk update \
     && apk upgrade --no-cache \
-    && apk add --update --no-cache --virtual .build-dependencies ${BUILD_DEPENDENCIES} \
     && apk add --update --no-cache ${DEPENDENCIES} \
-    ### install locales
-    && cd /tmp \
-    && git clone https://gitlab.com/rilian-la-te/musl-locales.git/ \
-    && cd musl-locales \
-    && cmake -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . \
-    && make \
-    && make install \
-    && cd / \
-    ### install phantomjs
-    && curl -Ls "https://github.com/dustinblackman/phantomized/releases/download/${PHANTOMIZED_VERSION}/dockerized-phantomjs.tar.gz" | tar xz -C / \
-    && curl -k -Ls https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-x86_64.tar.bz2  | tar -jxvf - -C /tmp \
-    && cp /tmp/phantomjs-${PHANTOMJS_VERSION}-linux-x86_64/bin/phantomjs /usr/local/bin/phantomjs \
-    ### install cpan modules
-    && cpan -T App:cpanminus \
-    && cpanm install -n utf8 \
-    && cpanm install -n JSON \
-    && cpanm install -n XML::Rules \
-    && cpanm install -n XML::DOM \
-    && cpanm install -n HTML::TreeBuilder \
-    && cpanm install -n Data::Dumper \
-    && cpanm install -n Time::Piece \
-    && cpanm install -n Time::Seconds \
-    && cpanm install -n DateTime \
-    && cpanm install -n DateTime::Format::DateParse \
-    && cpanm install -n DateTime::Format::Strptime \
+    ### setup python 3
+    && ln -sf python3 /usr/bin/python \
+    && python3 -m ensurepip \
+    && pip3 install --no-cache --upgrade pip setuptools bottle requests xmltodict \
     ### create necessary files/directories
     && mkdir -p /easyepg \
     && touch /xmltv.sock \
     ### alter permissions
     && chmod +x /usr/local/sbin/entrypoint \
-    && chmod +x /usr/local/bin/split \
     && chmod +x /usr/local/bin/easyepg.process \
     && chmod +x /usr/local/bin/easyepg.update \
-    && chmod +x /usr/local/sbin/packages.install \
-    && chmod +x /usr/local/sbin/packages.cleanup \
-    && chmod 644 /etc/easyepg.cron \
-    ### set alias
-    && alias split="/usr/local/bin/split" \
     ### cleanup
-    && apk del .build-dependencies \
-    && find /usr/share/i18n/locales/musl -type f ! -name 'en_US.UTF-8' | xargs rm \
-    && /usr/local/sbin/packages.cleanup
-
-COPY --from=__BASE_ARCH__/ubuntu:latest /usr/bin/ps /bin/ps
-
-RUN chmod +x /bin/ps \
-    && alias ps="/bin/ps"
+    && rm -rf ${CLEANUP}
 
 ENTRYPOINT [ "/usr/local/sbin/entrypoint" ]
 

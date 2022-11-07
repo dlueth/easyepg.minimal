@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - alpine
+      - beta
   schedule:
     - cron: '0 0 * * 0'
 env:
@@ -12,11 +12,11 @@ env:
 jobs:
   preparation:
     name: Preparation
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Create environment
         run: |
-          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')-alpine\"" >> ./vars
+          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')-beta\"" >> ./vars
       - name: Persist environment
         uses: actions/upload-artifact@v1
         with:
@@ -24,13 +24,13 @@ jobs:
           path: ./vars
   amd64:
     name: Process amd64
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: [preparation]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: alpine
+          ref: beta
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -64,13 +64,13 @@ jobs:
           path: ./amd64
   arm32v7:
     name: Process arm32v7
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: [preparation]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: alpine
+          ref: beta
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -107,13 +107,13 @@ jobs:
           path: ./arm32v7
   arm64v8:
     name: Process arm64v8
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: [preparation]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: alpine
+          ref: beta
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -150,13 +150,13 @@ jobs:
           path: ./arm64v8
   publish:
     name: Process multi-arch
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: [preparation, amd64, arm32v7, arm64v8]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: alpine
+          ref: beta
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -204,17 +204,17 @@ jobs:
           docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 --os linux --arch arm64 --variant armv8
 
           docker manifest push qoopido/easyepg.minimal:${DOCKER_TAG} --purge
-      - name: Push latest to registry
+      - name: Push beta to registry
         run: |
           source ./environment/vars
 
           for ARCH in amd64 arm32v7 arm64v8; do
-            docker tag qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH} qoopido/easyepg.minimal:latest-alpine-${ARCH}
-            docker push qoopido/easyepg.minimal:latest-alpine-${ARCH}
+            docker tag qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH} qoopido/easyepg.minimal:beta-${ARCH}
+            docker push qoopido/easyepg.minimal:beta-${ARCH}
           done
 
-          docker manifest create qoopido/easyepg.minimal:latest-alpine qoopido/easyepg.minimal:latest-alpine-amd64 qoopido/easyepg.minimal:latest-alpine-arm32v7 qoopido/easyepg.minimal:latest-alpine-arm64v8
-          docker manifest annotate qoopido/easyepg.minimal:latest-alpine qoopido/easyepg.minimal:latest-alpine-arm32v7 --os linux --arch arm
-          docker manifest annotate qoopido/easyepg.minimal:latest-alpine qoopido/easyepg.minimal:latest-alpine-arm64v8 --os linux --arch arm64 --variant armv8
+          docker manifest create qoopido/easyepg.minimal:beta qoopido/easyepg.minimal:beta-amd64 qoopido/easyepg.minimal:beta-arm32v7 qoopido/easyepg.minimal:beta-arm64v8
+          docker manifest annotate qoopido/easyepg.minimal:beta qoopido/easyepg.minimal:beta-arm32v7 --os linux --arch arm
+          docker manifest annotate qoopido/easyepg.minimal:beta qoopido/easyepg.minimal:beta-arm64v8 --os linux --arch arm64 --variant armv8
 
-          docker manifest push qoopido/easyepg.minimal:latest-alpine --purge
+          docker manifest push qoopido/easyepg.minimal:beta --purge

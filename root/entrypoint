@@ -4,10 +4,6 @@ set -f
 
 USERNAME="easyepg"
 
-if [[ -z "${MODE}" ]]; then
-  MODE="run"
-fi
-
 if [[ -z "${TIMEZONE}" ]]; then
   TIMEZONE="Europe/Berlin"
 fi
@@ -20,20 +16,16 @@ if [[ -z "${USER_ID}" ]]; then
   USER_ID="1099"
 fi
 
-if [[ -z "${FREQUENCY}" ]]; then
-  FREQUENCY="0 2 * * *"
-fi
-
 if [[ -z "${UPDATE}" ]]; then
   UPDATE="yes"
 fi
 
 if [[ -z "${REPO}" ]]; then
-  REPO="sunsettrack4"
+  REPO="sunsettrack4/script.service.easyepg-lite"
 fi
 
 if [[ -z "${BRANCH}" ]]; then
-  BRANCH="master"
+  BRANCH="main"
 fi
 
 # handle persistance of environment
@@ -45,26 +37,20 @@ fi
 #
 #     echo "export USER_ID=\"${USER_ID}\"" >> /easyepg/.env
 #     echo "export GROUP_ID=\"${GROUP_ID}\"" >> /easyepg/.env
-#     echo "export MODE=\"${MODE}\"" >> /easyepg/.env
 #     echo "export TIMEZONE=\"${TIMEZONE}\"" >> /easyepg/.env
-#     echo "export FREQUENCY=\"${FREQUENCY}\"" >> /easyepg/.env
 #     echo "export UPDATE=\"${UPDATE}\"" >> /easyepg/.env
 #     echo "export REPO=\"${REPO}\"" >> /easyepg/.env
 #     echo "export BRANCH=\"${BRANCH}\"" >> /easyepg/.env
-#     echo "export PACKAGES=\"${PACKAGES}\"" >> /easyepg/.env
 #   fi
 # fi
 
 echo "> settings used"
 echo "  > USER_ID:   \"${USER_ID}\""
 echo "  > GROUP_ID:  \"${GROUP_ID}\""
-echo "  > MODE:      \"${MODE}\""
 echo "  > TIMEZONE:  \"${TIMEZONE}\""
-echo "  > FREQUENCY: \"${FREQUENCY}\""
 echo "  > UPDATE:    \"${UPDATE}\""
 echo "  > REPO:      \"${REPO}\""
 echo "  > BRANCH:    \"${BRANCH}\""
-echo "  > PACKAGES:  \"${PACKAGES}\""
 
 # install easyepg
 if [[ ! -f /easyepg/update.sh ]] || [[ "${UPDATE}" = "yes" ]]; then
@@ -87,24 +73,4 @@ fi
 chown -R ${USER_ID}:${GROUP_ID} /easyepg
 chown -R ${USER_ID}:${GROUP_ID} /tmp
 
-# install packages
-if [[ ! -z "${PACKAGES}" ]]; then
-  /usr/local/sbin/packages.install
-  /usr/local/sbin/packages.cleanup
-fi
-
-case "${MODE}" in
-  run)
-    su -s /bin/bash -c "TERM=xterm /usr/local/bin/easyepg.process" ${USERNAME}
-    ;;
-  cron)
-    sed -i "s/\${FREQUENCY}/${FREQUENCY}/" /etc/easyepg.cron
-    sed -i "s/\${USERNAME}/${USERNAME}/" /etc/easyepg.cron
-    crontab -u root /etc/easyepg.cron
-    # leave exec out here on purpose as crond fiddles with process-ids itself
-    /usr/sbin/crond -f -l 0
-    ;;
-  *)
-    exec tail -f /dev/null
-    ;;
-esac
+su -s /bin/bash -c "TERM=xterm /usr/local/bin/easyepg.process" ${USERNAME}
