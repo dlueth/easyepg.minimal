@@ -1,26 +1,6 @@
 #!/bin/bash
 
-while getopts ":t:m:n:" options; do
-  case "${options}" in
-    t)
-      TAG="${OPTARG}"
-    ;;
-    n)
-      TAGNEW="${OPTARG}"
-    ;;
-    m)
-      MODE="${OPTARG}"
-    ;;
-  esac
-done
-
-if [[ -z "${TAG}" ]]; then
-  TAG="latest"
-fi
-
-if [[ -z "${TAGNEW}" ]]; then
-  TAGNEW="latest"
-fi
+TAG="alpha"
 
 COLOR_NOTICE='\e[95m'
 COLOR_ERROR='\e[91m'
@@ -63,35 +43,6 @@ build()
     logDefault "> fetched ${ARCH}"
   done
 
-  logNotice "Creating Dockerfiles"
-
-  for DOCKER_ARCH in amd64 arm32v7 arm64v8; do
-    case ${DOCKER_ARCH} in
-      amd64)
-        QEMU_ARCH="x86_64"
-        ;;
-      arm32v7)
-        QEMU_ARCH="arm"
-        ;;
-      arm64v8)
-        QEMU_ARCH="aarch64"
-        ;;
-    esac
-
-    cp Dockerfile.multi Dockerfile.${DOCKER_ARCH}
-
-    sed -i "" "s|__BASE_ARCH__|${DOCKER_ARCH}|g" Dockerfile.${DOCKER_ARCH}
-    sed -i "" "s|__QEMU_ARCH__|${QEMU_ARCH}|g" Dockerfile.${DOCKER_ARCH}
-
-    if [[ ${DOCKER_ARCH} == 'amd64' ]]; then
-      sed -i "" "/__CROSS_/d" Dockerfile.${DOCKER_ARCH}
-    else
-      sed -i "" "s/__CROSS_//g" Dockerfile.${DOCKER_ARCH}
-    fi
-
-    logDefault "> created Dockerfile.${DOCKER_ARCH}"
-  done
-
   logNotice "Building images"
 
   for DOCKER_ARCH in amd64 arm32v7 arm64v8; do
@@ -101,57 +52,6 @@ build()
   done
 }
 
-tag() {
-  for DOCKER_ARCH in amd64 arm32v7 arm64v8; do
-    docker tag qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH} qoopido/easyepg.minimal:${TAGNEW}-${DOCKER_ARCH}
-
-    logDefault "> tagged qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH} as qoopido/easyepg.minimal:${TAGNEW}-${DOCKER_ARCH}"
-  done
-}
-
-publish() {
-  logNotice "Publishing images"
-
-  for DOCKER_ARCH in amd64 arm32v7 arm64v8; do
-    docker push qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH}
-
-    logDefault "> pushed qoopido/easyepg.minimal:${TAG}-${DOCKER_ARCH}"
-  done
-
-  logNotice "Processing manifest"
-
-  docker manifest create qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-amd64 qoopido/easyepg.minimal:${TAG}-arm32v7 qoopido/easyepg.minimal:${TAG}-arm64v8
-
-  logDefault "> created manifest"
-
-  docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm32v7 --os linux --arch arm
-  docker manifest annotate qoopido/easyepg.minimal:${TAG} qoopido/easyepg.minimal:${TAG}-arm64v8 --os linux --arch arm64 --variant armv8
-
-  logDefault "> added annotations"
-
-  docker manifest push qoopido/easyepg.minimal:${TAG} --purge
-
-  logDefault "> pushed manifest"
-}
-
-case "${MODE}" in
-  build)
-    build
-    ;;
-  tag)
-    tag
-    ;;
-  publish)
-    publish
-    ;;
-  *)
-    logError "Usage: easyepg.minimal -m [build|tag|publish]"
-    logError "       -t: tag for the image"
-    logError "           => used by [build|tag|publish], defaults to \"latest\""
-    logError "       -n: new tag for the image"
-    logError "           => used by [tag], defaults to \"latest\""
-    exit 1
-    ;;
-esac
+build
 
 exit

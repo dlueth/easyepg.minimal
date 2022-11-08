@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Create environment
         run: |
-          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')-beta\"" >> ./vars
+          echo "export DOCKER_TAG=\"${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')-alpha\"" >> ./vars
       - name: Persist environment
         uses: actions/upload-artifact@v1
         with:
@@ -30,7 +30,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: beta
+          ref: alpha
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -70,7 +70,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: beta
+          ref: alpha
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -113,7 +113,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: beta
+          ref: alpha
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -156,7 +156,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: beta
+          ref: alpha
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -204,17 +204,17 @@ jobs:
           docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 --os linux --arch arm64 --variant armv8
 
           docker manifest push qoopido/easyepg.minimal:${DOCKER_TAG} --purge
-      - name: Push beta to registry
+      - name: Push alpha to registry
         run: |
           source ./environment/vars
 
           for ARCH in amd64 arm32v7 arm64v8; do
-            docker tag qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH} qoopido/easyepg.minimal:beta-${ARCH}
-            docker push qoopido/easyepg.minimal:beta-${ARCH}
+            docker tag qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH} qoopido/easyepg.minimal:alpha-${ARCH}
+            docker push qoopido/easyepg.minimal:alpha-${ARCH}
           done
 
-          docker manifest create qoopido/easyepg.minimal:beta qoopido/easyepg.minimal:beta-amd64 qoopido/easyepg.minimal:beta-arm32v7 qoopido/easyepg.minimal:beta-arm64v8
-          docker manifest annotate qoopido/easyepg.minimal:beta qoopido/easyepg.minimal:beta-arm32v7 --os linux --arch arm
-          docker manifest annotate qoopido/easyepg.minimal:beta qoopido/easyepg.minimal:beta-arm64v8 --os linux --arch arm64 --variant armv8
+          docker manifest create qoopido/easyepg.minimal:alpha qoopido/easyepg.minimal:alpha-amd64 qoopido/easyepg.minimal:alpha-arm32v7 qoopido/easyepg.minimal:alpha-arm64v8
+          docker manifest annotate qoopido/easyepg.minimal:alpha qoopido/easyepg.minimal:alpha-arm32v7 --os linux --arch arm
+          docker manifest annotate qoopido/easyepg.minimal:alpha qoopido/easyepg.minimal:alpha-arm64v8 --os linux --arch arm64 --variant armv8
 
-          docker manifest push qoopido/easyepg.minimal:beta --purge
+          docker manifest push qoopido/easyepg.minimal:alpha --purge

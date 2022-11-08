@@ -1,51 +1,64 @@
-FROM arm64v8/alpine:3.16.2 AS build
+FROM arm64v8/python:slim-bullseye AS builder
 
-LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
-      org.label-schema.docker.dockerfile="/Dockerfile" \
-      org.label-schema.name="easyepg.minimal"
-
-ARG DEPENDENCIES="bash socat python3 git"
-
-ENV USER_ID="1099" \
-    GROUP_ID="1099" \
-    TIMEZONE="Europe/Berlin" \
-    UPDATE="yes" \
-    REPO="sunsettrack4/script.service.easyepg-lite" \
-    BRANCH="main" \
-    TERM=xterm \
-    LANGUAGE="en_US.UTF-8" \
-    LANG="en_US.UTF-8" \
-    LC_ALL="en_US.UTF-8" \
-    CLEANUP="/var/cache/apk/* /tmp/* /var/tmp/* /var/log/* /usr/share/doc/ /usr/share/man/ /usr/share/locale/ /root/.cpan /root/.cpanm" \
-    PYTHONUNBUFFERED=1
+ARG APT_DEPENDENCIES="build-essential zlib1g-dev git binutils patchelf upx"
+ARG PIP_DEPENDENCIES="pip setuptools bottle requests xmltodict pyinstaller staticx"
+ARG CLEANUP="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/"
 
 COPY root/qemu-aarch64-static /usr/bin/
-COPY root/entrypoint /usr/local/sbin/entrypoint
-COPY root/easyepg.process /usr/local/bin/easyepg.process
-COPY root/easyepg.update /usr/local/bin/easyepg.update
+COPY root/docker.py /tmp/docker.py
 
-RUN sed -e 's;^#http\(.*\)/v3.16/community;http\1/v3.16/community;g' -i /etc/apk/repositories \
-    && apk update \
-    && apk upgrade --no-cache \
-    && apk add --update --no-cache ${DEPENDENCIES} \
+RUN apt-get -qy update \
+    ### tweak some apt & dpkg settings
+    && echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
+    && echo "APT::Install-Suggests "0";" >> /etc/apt/apt.conf.d/docker-noinstall-suggests \
+    && echo "Dir::Cache "";" >> /etc/apt/apt.conf.d/docker-nocache \
+    && echo "Dir::Cache::archives "";" >> /etc/apt/apt.conf.d/docker-nocache \
+    && echo "path-exclude=/usr/share/locale/*" >> /etc/dpkg/dpkg.cfg.d/docker-nolocales \
+    && echo "path-exclude=/usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/docker-noman \
+    && echo "path-exclude=/usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
+    && echo "path-include=/usr/share/doc/*/copyright" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
+    ### install basic packages
+    && apt-get install -qy apt-utils locales tzdata \
+    ### limit locale to en_US.UTF-8
+    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen --purge en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
+    ### run dist-upgrade
+    && apt-get dist-upgrade -qy \
+    ### install dependencies
+    && apt-get install -qy ${APT_DEPENDENCIES} \
     ### setup python 3
-    && ln -sf python3 /usr/bin/python \
     && python3 -m ensurepip \
-    && pip3 install --no-cache --upgrade pip setuptools bottle requests xmltodict \
-    ### create necessary files/directories
-    && mkdir -p /easyepg \
-    && touch /xmltv.sock \
-    ### alter permissions
-    && chmod +x /usr/local/sbin/entrypoint \
-    && chmod +x /usr/local/bin/easyepg.process \
-    && chmod +x /usr/local/bin/easyepg.update \
-    ### cleanup
+    && pip3 install --no-cache --upgrade wheel scons \
+    && pip3 install --no-cache --upgrade ${PIP_DEPENDENCIES} \
+    ### create necessary directories \
+    && cd / \
+    && mkdir -p /storage \
+    ### build easyepg \
+    && git clone --depth 1 --branch main https://github.com/sunsettrack4/script.service.easyepg-lite.git /tmp/easyepg \
+    && cd /tmp/easyepg \
+    && git checkout main \
+    && mv /tmp/docker.py ./ \
+    && python3 -OO -m PyInstaller --add-data="resources/data:resources/data" --name easyepg -F docker.py \
+    && cd ./dist \
+    && staticx --strip easyepg /easyepg \
+    ### cleanup \
+    && cd / \
     && rm -rf ${CLEANUP}
 
-ENTRYPOINT [ "/usr/local/sbin/entrypoint" ]
 
-VOLUME /easyepg
+FROM scratch
 
-FROM build
+LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
+      org.label-schema.docker.dockerfile="/Dockerfile.arm64v8" \
+      org.label-schema.name="easyepg.minimal"
 
-RUN rm -rf /usr/bin/qemu-*
+ENTRYPOINT ["/easyepg"]
+USER 65535
+
+ENV TZ=Europe/Berlin
+
+COPY --from=builder --chown=65535:65535 /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder --chown=65535:65535 tmp /tmp
+COPY --from=builder --chown=65535:65535 storage /storage
+COPY --from=builder --chown=65535:65535 easyepg /
