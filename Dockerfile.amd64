@@ -8,14 +8,14 @@ COPY root/docker.py /tmp/docker.py
 
 RUN apt-get -qy update \
     ### tweak some apt & dpkg settings
-    && echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
-    && echo "APT::Install-Suggests "0";" >> /etc/apt/apt.conf.d/docker-noinstall-suggests \
-    && echo "Dir::Cache "";" >> /etc/apt/apt.conf.d/docker-nocache \
-    && echo "Dir::Cache::archives "";" >> /etc/apt/apt.conf.d/docker-nocache \
-    && echo "path-exclude=/usr/share/locale/*" >> /etc/dpkg/dpkg.cfg.d/docker-nolocales \
-    && echo "path-exclude=/usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/docker-noman \
-    && echo "path-exclude=/usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
-    && echo "path-include=/usr/share/doc/*/copyright" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
+    # && echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
+    # && echo "APT::Install-Suggests "0";" >> /etc/apt/apt.conf.d/docker-noinstall-suggests \
+    # && echo "Dir::Cache "";" >> /etc/apt/apt.conf.d/docker-nocache \
+    # && echo "Dir::Cache::archives "";" >> /etc/apt/apt.conf.d/docker-nocache \
+    # && echo "path-exclude=/usr/share/locale/*" >> /etc/dpkg/dpkg.cfg.d/docker-nolocales \
+    # && echo "path-exclude=/usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/docker-noman \
+    # && echo "path-exclude=/usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
+    # && echo "path-include=/usr/share/doc/*/copyright" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
     ### install basic packages
     && apt-get install -qy apt-utils locales tzdata \
     ### limit locale to en_US.UTF-8
@@ -23,7 +23,7 @@ RUN apt-get -qy update \
     && locale-gen --purge en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 \
     ### run dist-upgrade
-    && apt-get dist-upgrade -qy \
+    # && apt-get dist-upgrade -qy \
     ### install dependencies
     && apt-get install -qy ${APT_DEPENDENCIES} \
     ### setup python 3

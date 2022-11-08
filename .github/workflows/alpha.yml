@@ -1,4 +1,4 @@
-name: Alpine
+name: Alpha
 on:
   workflow_dispatch:
   push:
@@ -12,7 +12,7 @@ env:
 jobs:
   preparation:
     name: Preparation
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Create environment
         run: |
@@ -24,7 +24,7 @@ jobs:
           path: ./vars
   amd64:
     name: Process amd64
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [preparation]
     steps:
       - name: Checkout repository
@@ -64,7 +64,7 @@ jobs:
           path: ./amd64
   arm32v7:
     name: Process arm32v7
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [preparation]
     steps:
       - name: Checkout repository
@@ -107,7 +107,7 @@ jobs:
           path: ./arm32v7
   arm64v8:
     name: Process arm64v8
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [preparation]
     steps:
       - name: Checkout repository
@@ -150,7 +150,7 @@ jobs:
           path: ./arm64v8
   publish:
     name: Process multi-arch
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [preparation, amd64, arm32v7, arm64v8]
     steps:
       - name: Checkout repository
