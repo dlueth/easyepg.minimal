@@ -1,4 +1,4 @@
-FROM amd64/python:slim-bullseye AS builder
+FROM --platform=linux/amd64 python:slim-bullseye AS builder
 
 ARG APT_DEPENDENCIES="git binutils patchelf upx"
 ARG PIP_DEPENDENCIES="pip setuptools bottle requests xmltodict pyinstaller staticx"
@@ -45,7 +45,7 @@ RUN apt-get -qy update \
     && rm -rf ${CLEANUP}
 
 
-FROM scratch
+FROM --platform=linux/amd64 scratch
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile.amd64" \

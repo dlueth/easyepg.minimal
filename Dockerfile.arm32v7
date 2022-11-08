@@ -1,7 +1,6 @@
-FROM arm32v7/python:slim-bullseye AS builder
+FROM --platform=linux/arm/v7 python:slim-bullseye AS builder
 
-# upx
-ARG APT_DEPENDENCIES="build-essential zlib1g-dev git binutils patchelf"
+ARG APT_DEPENDENCIES="build-essential zlib1g-dev git binutils patchelf upx"
 ARG PIP_DEPENDENCIES="pip setuptools bottle requests xmltodict pyinstaller staticx"
 ARG CLEANUP="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/"
 
@@ -48,7 +47,7 @@ RUN apt-get -qy update \
     && rm -rf ${CLEANUP}
 
 
-FROM scratch
+FROM --platform=linux/arm/v7 scratch
 
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile.arm32v7" \
