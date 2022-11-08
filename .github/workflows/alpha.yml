@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - beta
+      - alpha
   schedule:
     - cron: '0 0 * * 0'
 env:
