@@ -4,19 +4,25 @@ ARG APT_DEPENDENCIES="build-essential zlib1g-dev git binutils patchelf upx"
 ARG PIP_DEPENDENCIES="pip setuptools bottle requests xmltodict pyinstaller staticx"
 ARG CLEANUP="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/"
 
+ENV DEBIAN_FRONTEND="noninteractive" \
+    TERM=xterm \
+    LANGUAGE="en_US.UTF-8" \
+    LANG="en_US.UTF-8" \
+    LC_ALL="en_US.UTF-8"
+
 COPY root/qemu-arm-static /usr/bin/
 COPY root/docker.py /tmp/docker.py
 
 RUN apt-get -qy update \
     ### tweak some apt & dpkg settings
-    # && echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
-    # && echo "APT::Install-Suggests "0";" >> /etc/apt/apt.conf.d/docker-noinstall-suggests \
-    # && echo "Dir::Cache "";" >> /etc/apt/apt.conf.d/docker-nocache \
-    # && echo "Dir::Cache::archives "";" >> /etc/apt/apt.conf.d/docker-nocache \
-    # && echo "path-exclude=/usr/share/locale/*" >> /etc/dpkg/dpkg.cfg.d/docker-nolocales \
-    # && echo "path-exclude=/usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/docker-noman \
-    # && echo "path-exclude=/usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
-    # && echo "path-include=/usr/share/doc/*/copyright" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
+    && echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
+    && echo "APT::Install-Suggests "0";" >> /etc/apt/apt.conf.d/docker-noinstall-suggests \
+    && echo "Dir::Cache "";" >> /etc/apt/apt.conf.d/docker-nocache \
+    && echo "Dir::Cache::archives "";" >> /etc/apt/apt.conf.d/docker-nocache \
+    && echo "path-exclude=/usr/share/locale/*" >> /etc/dpkg/dpkg.cfg.d/docker-nolocales \
+    && echo "path-exclude=/usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/docker-noman \
+    && echo "path-exclude=/usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
+    && echo "path-include=/usr/share/doc/*/copyright" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
     ### install basic packages
     && apt-get install -qy apt-utils locales tzdata \
     ### limit locale to en_US.UTF-8

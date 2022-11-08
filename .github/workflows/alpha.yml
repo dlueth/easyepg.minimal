@@ -55,7 +55,7 @@ jobs:
         run: |
           source ./environment/vars
 
-          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 -f Dockerfile.amd64 .
+          docker build --platform=linux/amd64 --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 -f Dockerfile.amd64 .
           docker save qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 > ./amd64
       - name: Persist artifact
         uses: actions/upload-artifact@v1
@@ -98,7 +98,7 @@ jobs:
         run: |
           source ./environment/vars
 
-          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 -f Dockerfile.arm32v7 .
+          docker build --platform=linux/arm/v7 --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 -f Dockerfile.arm32v7 .
           docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 > ./arm32v7
       - name: Persist artifact
         uses: actions/upload-artifact@v1
@@ -141,7 +141,7 @@ jobs:
         run: |
           source ./environment/vars
 
-          docker build --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 -f Dockerfile.arm64v8 .
+          docker build --platform=linux/arm64 --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 -f Dockerfile.arm64v8 .
           docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 > ./arm64v8
       - name: Persist artifact
         uses: actions/upload-artifact@v1
