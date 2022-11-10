@@ -4,7 +4,7 @@ LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
       org.label-schema.docker.dockerfile="/Dockerfile" \
       org.label-schema.name="easyepg.minimal"
 
-ARG DEPENDENCIES="bash socat python3 git"
+ARG DEPENDENCIES="bash socat python3 git tzdata"
 
 ENV USER_ID="1099" \
     GROUP_ID="1099" \
