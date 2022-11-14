@@ -1,16 +1,11 @@
-FROM --platform=linux/amd64 python:slim-bullseye AS builder
-
-ARG APT_DEPENDENCIES="git binutils patchelf upx"
+FROM --platform=$BUILDPLATFORM python:slim-bullseye AS builder
+ARG APT_DEPENDENCIES="build-essential bash zlib1g-dev git binutils patchelf upx"
 ARG PIP_DEPENDENCIES="pip setuptools bottle requests xmltodict pyinstaller staticx"
-ARG CLEANUP="/tmp/* /var/tmp/* /var/log/* /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/ /var/cache/apt/archives /usr/share/doc/ /usr/share/man/ /usr/share/locale/"
 
 ENV DEBIAN_FRONTEND="noninteractive" \
-    TERM=xterm \
-    LANGUAGE="en_US.UTF-8" \
-    LANG="en_US.UTF-8" \
-    LC_ALL="en_US.UTF-8"
+    TERM=xterm
 
-COPY root/docker.py /tmp/docker.py
+COPY root/docker.py /tmp
 
 RUN apt-get -qy update \
     ### tweak some apt & dpkg settings
@@ -22,22 +17,12 @@ RUN apt-get -qy update \
     && echo "path-exclude=/usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/docker-noman \
     && echo "path-exclude=/usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
     && echo "path-include=/usr/share/doc/*/copyright" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
-    ### install basic packages
-    && apt-get install -qy apt-utils locales tzdata \
-    ### limit locale to en_US.UTF-8
-    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
-    && locale-gen --purge en_US.UTF-8 \
-    && update-locale LANG=en_US.UTF-8 \
-    ### run dist-upgrade
-    # && apt-get dist-upgrade -qy \
     ### install dependencies
     && apt-get install -qy ${APT_DEPENDENCIES} \
     ### setup python 3
     && python3 -m ensurepip \
+    && pip3 install --no-cache --upgrade wheel scons \
     && pip3 install --no-cache --upgrade ${PIP_DEPENDENCIES} \
-    ### create necessary directories \
-    && cd / \
-    && mkdir -p /storage \
     ### build easyepg \
     && git clone --depth 1 --branch main https://github.com/sunsettrack4/script.service.easyepg-lite.git /tmp/easyepg \
     && cd /tmp/easyepg \
@@ -46,23 +31,21 @@ RUN apt-get -qy update \
     && python3 -OO -m PyInstaller --add-data="resources/data:resources/data" --name easyepg -F docker.py \
     && cd ./dist \
     && staticx --strip easyepg /easyepg \
-    ### cleanup \
     && cd / \
-    && rm -rf ${CLEANUP}
+    && rm -rf /tmp/* \
+    && mkdir -m 777 /storage \
+    && chmod 777 /easyepg \
+    && chmod +x /easyepg
 
 
-FROM --platform=linux/amd64 scratch
-
+FROM --platform=$BUILDPLATFORM scratch
 LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
-      org.label-schema.docker.dockerfile="/Dockerfile.amd64" \
+      org.label-schema.docker.dockerfile="/Dockerfile" \
       org.label-schema.name="easyepg.minimal"
 
 ENTRYPOINT ["/easyepg"]
-USER 65535
+EXPOSE 4000
 
-ENV TZ=Europe/Berlin
-
-COPY --from=builder --chown=65535:65535 /usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=builder --chown=65535:65535 tmp /tmp
-COPY --from=builder --chown=65535:65535 storage /storage
-COPY --from=builder --chown=65535:65535 easyepg /
+ADD root/tmp.tar /
+COPY --from=builder /storage /storage
+COPY --from=builder /easyepg /easyepg
