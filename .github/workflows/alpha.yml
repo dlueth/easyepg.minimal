@@ -22,8 +22,8 @@ jobs:
         with:
           name: environment
           path: ./vars
-  amd64:
-    name: Process amd64
+  build:
+    name: Build multiarch images
     runs-on: ubuntu-latest
     needs: [preparation]
     steps:
@@ -35,136 +35,6 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: environment
-      - name: Configure system
-        run: |
-          # update packages & install requirements
-            sudo apt-get -qy update
-            sudo apt-get -qy install moreutils
-
-          # enable Dockers experimental features
-            if [[ -z "${DOCKER_CONFIG}" ]]; then
-              export DOCKER_CONFIG="${TEMPORARY_DIRECTORY}/docker.$(date +%s)"
-              mkdir -p ${DOCKER_CONFIG}
-              touch ${DOCKER_CONFIG}/config.json
-            fi
-
-            sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
-            sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
-            sudo service docker restart
-      - name: Build image
-        run: |
-          source ./environment/vars
-
-          docker build --platform=linux/amd64 --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 -f Dockerfile.amd64 .
-          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 > ./amd64
-      - name: Persist artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: images
-          path: ./amd64
-  arm32v7:
-    name: Process arm32v7
-    runs-on: ubuntu-latest
-    needs: [preparation]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v1
-        with:
-          ref: alpha
-      - name: Fetch environment
-        uses: actions/download-artifact@v1
-        with:
-          name: environment
-      - name: Configure system
-        run: |
-          # update packages & install requirements
-            sudo apt-get -qy update
-            sudo apt-get -qy install qemu-user-static binfmt-support moreutils
-
-          # copy qemu for use via Dockerfile
-            cp /usr/bin/qemu-arm-static ./root
-
-          # enable Dockers experimental features
-            if [[ -z "${DOCKER_CONFIG}" ]]; then
-              export DOCKER_CONFIG="${TEMPORARY_DIRECTORY}/docker.$(date +%s)"
-              mkdir -p ${DOCKER_CONFIG}
-              touch ${DOCKER_CONFIG}/config.json
-            fi
-
-            sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
-            sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
-            sudo service docker restart
-      - name: Build image
-        run: |
-          source ./environment/vars
-
-          docker build --platform=linux/arm/v7 --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 -f Dockerfile.arm32v7 .
-          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 > ./arm32v7
-      - name: Persist artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: images
-          path: ./arm32v7
-  arm64v8:
-    name: Process arm64v8
-    runs-on: ubuntu-latest
-    needs: [preparation]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v1
-        with:
-          ref: alpha
-      - name: Fetch environment
-        uses: actions/download-artifact@v1
-        with:
-          name: environment
-      - name: Configure system
-        run: |
-          # update packages & install requirements
-            sudo apt-get -qy update
-            sudo apt-get -qy install qemu-user-static binfmt-support moreutils
-
-          # copy qemu for use via Dockerfile
-            cp /usr/bin/qemu-aarch64-static ./root
-
-          # enable Dockers experimental features
-            if [[ -z "${DOCKER_CONFIG}" ]]; then
-              export DOCKER_CONFIG="${TEMPORARY_DIRECTORY}/docker.$(date +%s)"
-              mkdir -p ${DOCKER_CONFIG}
-              touch ${DOCKER_CONFIG}/config.json
-            fi
-
-            sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
-            sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
-            sudo service docker restart
-      - name: Build image
-        run: |
-          source ./environment/vars
-
-          docker build --platform=linux/arm64 --compress --no-cache --force-rm --squash -t qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 -f Dockerfile.arm64v8 .
-          docker save qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 > ./arm64v8
-      - name: Persist artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: images
-          path: ./arm64v8
-  publish:
-    name: Process multi-arch
-    runs-on: ubuntu-latest
-    needs: [preparation, amd64, arm32v7, arm64v8]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v1
-        with:
-          ref: alpha
-      - name: Fetch environment
-        uses: actions/download-artifact@v1
-        with:
-          name: environment
-      - name: Fetch artifacts
-        uses: actions/download-artifact@v1
-        with:
-          name: images
       - name: Authenticate registry
         uses: azure/docker-login@v1
         with:
@@ -186,35 +56,10 @@ jobs:
             sudo sh -c "jq -s 'add' ${DOCKER_CONFIG}/config.json ./.docker/config.json | sponge ${DOCKER_CONFIG}/config.json"
             sudo sh -c "jq . ./.docker/daemon.json | sponge /etc/docker/daemon.json"
             sudo service docker restart
-      - name: Import artifacts
-        run: |
-          docker load --input ./images/amd64
-          docker load --input ./images/arm32v7
-          docker load --input ./images/arm64v8
-      - name: Push version to registry
+      - name: Build image
         run: |
           source ./environment/vars
-
-          for ARCH in amd64 arm32v7 arm64v8; do
-            docker push qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH}
-          done
-
-          docker manifest create qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-amd64 qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8
-          docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm32v7 --os linux --arch arm
-          docker manifest annotate qoopido/easyepg.minimal:${DOCKER_TAG} qoopido/easyepg.minimal:${DOCKER_TAG}-arm64v8 --os linux --arch arm64 --variant armv8
-
-          docker manifest push qoopido/easyepg.minimal:${DOCKER_TAG} --purge
-      - name: Push alpha to registry
-        run: |
-          source ./environment/vars
-
-          for ARCH in amd64 arm32v7 arm64v8; do
-            docker tag qoopido/easyepg.minimal:${DOCKER_TAG}-${ARCH} qoopido/easyepg.minimal:alpha-${ARCH}
-            docker push qoopido/easyepg.minimal:alpha-${ARCH}
-          done
-
-          docker manifest create qoopido/easyepg.minimal:alpha qoopido/easyepg.minimal:alpha-amd64 qoopido/easyepg.minimal:alpha-arm32v7 qoopido/easyepg.minimal:alpha-arm64v8
-          docker manifest annotate qoopido/easyepg.minimal:alpha qoopido/easyepg.minimal:alpha-arm32v7 --os linux --arch arm
-          docker manifest annotate qoopido/easyepg.minimal:alpha qoopido/easyepg.minimal:alpha-arm64v8 --os linux --arch arm64 --variant armv8
-
-          docker manifest push qoopido/easyepg.minimal:alpha --purge
+          
+          docker buildx create --name easyepg --driver docker-container --bootstrap
+          docker buildx use easyepg
+          docker buildx build --platform linux/amd64,linux/arm64/v8,linux/arm/v7 --compress --no-cache --force-rm --squash --push -t qoopido/easyepg.minimal:alpha .
