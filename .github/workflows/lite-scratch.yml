@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - alpha
+      - lite-scratch
   schedule:
     - cron: '0 0 * * *'
 env:
@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Create environment
         run: |
-          echo "export DOCKER_TAG=\"alpha-${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')\"" >> ./vars
+          echo "export DOCKER_TAG=\"lite-scratch-${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')\"" >> ./vars
       - name: Persist environment
         uses: actions/upload-artifact@v1
         with:
@@ -30,7 +30,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v1
         with:
-          ref: alpha
+          ref: lite-scratch
       - name: Fetch environment
         uses: actions/download-artifact@v1
         with:
@@ -62,4 +62,4 @@ jobs:
           
           docker buildx create --name easyepg --driver docker-container --bootstrap
           docker buildx use easyepg
-          docker buildx build --platform linux/amd64,linux/arm64/v8,linux/arm/v7 --compress --no-cache --force-rm --squash --push -t qoopido/easyepg.minimal:${DOCKER_TAG} -t qoopido/easyepg.minimal:alpha .
+          docker buildx build --platform linux/amd64,linux/arm64/v8,linux/arm/v7 --compress --no-cache --force-rm --squash --push -t qoopido/easyepg.minimal:${DOCKER_TAG} -t qoopido/easyepg.minimal:lite-scratch .
