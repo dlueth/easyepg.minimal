@@ -12,7 +12,7 @@ You will need to have `docker` installed on your system and the user you want to
 ## Installation script
 Beside the manual docker setup most people will use the repository provides an installation script that guides you through the setup. Switch to the user you want to run the container with and issue the following command to get everything up and running
 ```
-sh -c "$(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/init)"
+sh -c "$(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/dlueth/easyepg.minimal/lite-scratch/init)"
 ```
 
 ## Technical info for docker GUIs (e.g. Synology, UnRaid, OpenMediaVault)
