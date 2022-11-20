@@ -30,7 +30,7 @@ docker run \
   --name=easyepg \
   --restart unless-stopped \
   --net="bridge" \
-  qoopido/easyepg.minimal:alpha
+  qoopido/easyepg.minimal:lite-scratch
 ```
 
 Used volumes:
