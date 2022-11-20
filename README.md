@@ -2,9 +2,7 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/qoopido/easyepg.minimal.svg)
 
 # easyepg.minimal
-A minimal docker container for running easyepg 
-
-sh -c "$(curl -s -H 'Cache-Control: no-cache, no-store' https://raw.githubusercontent.com/dlueth/easyepg.minimal/lite-scratch/init)"
+A minimal docker container for running easyepg
 
 ## Prerequisites
 You will need to have `docker` installed on your system and the user you want to run it needs to be in the `docker` group.
