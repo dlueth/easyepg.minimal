@@ -4,12 +4,18 @@
 # easyepg.minimal
 A minimal docker container for running easyepg 
 
-### Prerequisites
+sh -c "$(curl -s -H 'Cache-Control: no-cache, no-store' https://raw.githubusercontent.com/dlueth/easyepg.minimal/lite-scratch/init)"
+
+## Prerequisites
 You will need to have `docker` installed on your system and the user you want to run it needs to be in the `docker` group.
 
 > **Note:** The image is a multi-arch build providing variants for amd64, arm32v7 and arm64v8 - the correct variant for your architecture should<sup>TM</sup> be pulled automatically.
 
-### Initial setup
+## Installation script
+Beside the manual docker setup most people will use the repository provides an installation script that guides you through the setup. Switch to the user you want to run the container with and issue the following command to get everything up and running
+```
+sh -c "$(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/dlueth/easyepg.minimal/master/init)"
+```
 
 ## Technical info for docker GUIs (e.g. Synology, UnRaid, OpenMediaVault)
 To learn how to manually start the container or about available parameters (you might need for your GUI used) see the following example:
