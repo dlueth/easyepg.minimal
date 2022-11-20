@@ -139,7 +139,6 @@ if [ -n "${LOCALTIME}" ]; then
   OPTIONS="${OPTIONS} -v ${LOCALTIME}:/etc/localtime:ro"
 fi
 
-echo "docker create --label=easyepg.lite --name=easyepg.lite --net bridge --restart unless-stopped ${OPTIONS} qoopido/easyepg.minimal:lite-scratch"
 sh -c "docker create --label=easyepg.lite --name=easyepg.lite --net bridge --restart unless-stopped ${OPTIONS} qoopido/easyepg.minimal:lite-scratch 1> /dev/null"
 log "> easyepg.lite"
 
