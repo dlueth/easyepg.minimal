@@ -60,6 +60,6 @@ jobs:
         run: |
           source ./environment/vars
           
-          docker buildx create --name easyepg --driver docker-container --bootstrap
-          docker buildx use easyepg
-          docker buildx build --platform linux/amd64,linux/arm64/v8,linux/arm/v7 --compress --no-cache --force-rm --squash --push -t qoopido/easyepg.minimal:${DOCKER_TAG} -t qoopido/easyepg.minimal:lite-scratch .
+          docker buildx create --name builder --driver docker-container --bootstrap
+          docker buildx use builder
+          docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 --compress --no-cache --force-rm --squash --push -t qoopido/easyepg.minimal:${DOCKER_TAG} -t qoopido/easyepg.minimal:lite-scratch .

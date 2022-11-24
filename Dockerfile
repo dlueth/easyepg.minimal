@@ -1,15 +1,13 @@
-FROM --platform=$BUILDPLATFORM python:slim-bullseye AS builder
-ARG APT_DEPENDENCIES="build-essential bash zlib1g-dev git binutils patchelf upx"
-ARG PIP_DEPENDENCIES="pip setuptools bottle requests xmltodict pyinstaller staticx"
+FROM python:3.10-slim-bullseye as base
 
+ARG APT_DEPENDENCIES="build-essential ccache libfuse-dev patchelf upx"
+ARG PIP_DEPENDENCIES="nuitka ordered-set pipreqs"
 ENV DEBIAN_FRONTEND="noninteractive" \
     TERM=xterm
 
-COPY root/docker.py /tmp
-
-RUN apt-get -qy update \
+RUN \
     ### tweak some apt & dpkg settings
-    && echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
+    echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
     && echo "APT::Install-Suggests "0";" >> /etc/apt/apt.conf.d/docker-noinstall-suggests \
     && echo "Dir::Cache "";" >> /etc/apt/apt.conf.d/docker-nocache \
     && echo "Dir::Cache::archives "";" >> /etc/apt/apt.conf.d/docker-nocache \
@@ -17,35 +15,49 @@ RUN apt-get -qy update \
     && echo "path-exclude=/usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/docker-noman \
     && echo "path-exclude=/usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
     && echo "path-include=/usr/share/doc/*/copyright" >> /etc/dpkg/dpkg.cfg.d/docker-nodoc \
-    ### install dependencies
+    ### install apt packages
+    && apt-get -qy update \
     && apt-get install -qy ${APT_DEPENDENCIES} \
     ### setup python 3
     && python3 -m ensurepip \
-    && pip3 install --no-cache --upgrade wheel scons \
-    && pip3 install --no-cache --upgrade ${PIP_DEPENDENCIES} \
-    ### build easyepg \
-    && git clone --depth 1 --branch main https://github.com/sunsettrack4/script.service.easyepg-lite.git /tmp/easyepg \
-    && cd /tmp/easyepg \
-    && git checkout main \
-    && mv /tmp/docker.py ./ \
-    && python3 -OO -m PyInstaller --add-data="resources/data:resources/data" --name easyepg -F docker.py \
-    && cd ./dist \
-    && staticx --strip easyepg /easyepg \
-    && cd / \
-    && rm -rf /tmp/* \
-    && mkdir -m 777 /storage \
-    && chmod 777 /easyepg \
-    && chmod +x /easyepg
+    && python3 -m pip install --no-cache --upgrade ${PIP_DEPENDENCIES}
 
+FROM base as builder
 
-FROM --platform=$BUILDPLATFORM scratch
-LABEL maintainer="Dirk Lüth <dirk.lueth@gmail.com>" \
-      org.label-schema.docker.dockerfile="/Dockerfile" \
-      org.label-schema.name="easyepg.minimal"
+ARG WORKDIR=/var/app
+WORKDIR ${WORKDIR}
+ADD https://github.com/sunsettrack4/script.service.easyepg-lite/tarball/master ${WORKDIR}/
+COPY root /
 
-ENTRYPOINT ["/easyepg"]
-EXPOSE 4000
+RUN \
+    ### prepare build
+    tar -xf master --strip 1 \
+    && find . ! -name "easyepg.py" -type f -maxdepth 1 -exec rm -f {} + \
+    && pipreqs ./ \
+    && python3 -m pip install --no-cache --upgrade -r requirements.txt \
+    ### run nuitka
+    && python3 -OO -m nuitka \
+        --standalone \
+        --include-data-dir=./resources/data=resources/data \
+        --follow-imports \
+        --follow-stdlib \
+        --nofollow-import-to=pytest \
+        --python-flag=nosite,-OO \
+        --plugin-enable=anti-bloat,implicit-imports,data-files,pylint-warnings \
+        --warn-implicit-exceptions \
+        --warn-unusual-code \
+        --prefer-source-code \
+        ./easyepg.py \
+    ### add dynamic modules
+    && cd easyepg.dist/ \
+    && /processLibs.sh \
+    ### run strip and upx
+    && strip --strip-unneeded --strip-debug easyepg \
+    && upx --best --overlay=strip easyepg
 
-ADD root/tmp.tar /
+FROM scratch
+
 COPY --from=builder /storage /storage
-COPY --from=builder /easyepg /easyepg
+COPY --from=builder /var/app/easyepg.dist/ /
+
+ENTRYPOINT [ "/easyepg" ]
