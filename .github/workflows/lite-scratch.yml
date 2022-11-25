@@ -13,7 +13,6 @@ jobs:
   build:
     name: Build multiarch images
     runs-on: ubuntu-latest
-    needs: [preparation]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
