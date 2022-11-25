@@ -31,6 +31,6 @@ jobs:
         run: |
           DOCKER_TAG="lite-scratch-${GITHUB_SHA}-$(date +'%Y%m%d-%H%M%S')"
           
-          docker buildx create --name builder --driver docker-container --bootstrap
-          docker buildx use builder
+          # docker buildx create --name builder --driver docker-container --bootstrap
+          # docker buildx use builder
           docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 --compress --no-cache --force-rm --push -t qoopido/easyepg.minimal:${DOCKER_TAG} -t qoopido/easyepg.minimal:lite-scratch .
