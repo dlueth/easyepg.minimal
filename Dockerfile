@@ -6,12 +6,8 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     TERM=xterm
 
 RUN \
-    ln -s /usr/bin/dpkg-split /usr/sbin/dpkg-split \
-    && ln -s /usr/bin/dpkg-deb /usr/sbin/dpkg-deb  \
-    && ln -s /bin/rm /usr/sbin/rm  \
-    && ln -s /bin/tar /usr/sbin/tar \
     ### tweak some apt & dpkg settings
-    && echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
+    echo "APT::Install-Recommends "0";" >> /etc/apt/apt.conf.d/docker-noinstall-recommends \
     && echo "APT::Install-Suggests "0";" >> /etc/apt/apt.conf.d/docker-noinstall-suggests \
     && echo "Dir::Cache "";" >> /etc/apt/apt.conf.d/docker-nocache \
     && echo "Dir::Cache::archives "";" >> /etc/apt/apt.conf.d/docker-nocache \
