@@ -1,11 +1,11 @@
-name: Alpha
+name: Lite-Scratch
 on:
   workflow_dispatch:
   push:
     branches:
-      - lite-scratch
+    - lite-scratch
   schedule:
-    - cron: '0 0 * * *'
+  - cron: '0 0 * * *'
 env:
   DEBIAN_FRONTEND: noninteractive
   TEMPORARY_DIRECTORY: /home/runner/work/_temp
