@@ -26,12 +26,12 @@ FROM base as builder
 
 ARG WORKDIR=/var/app
 WORKDIR ${WORKDIR}
-ADD https://github.com/sunsettrack4/script.service.easyepg-lite/tarball/master ${WORKDIR}/
+ADD https://github.com/sunsettrack4/script.service.easyepg-lite/archive/master.tar.gz ${WORKDIR}/
 COPY root /
 
 RUN \
     ### prepare build
-    tar -xf master --strip 1 \
+    tar -xf master.tar.gz --strip 1 \
     && find . ! -name "easyepg.py" -type f -maxdepth 1 -exec rm -f {} + \
     && pipreqs ./ \
     && python3 -m pip install --no-cache --upgrade -r requirements.txt \
