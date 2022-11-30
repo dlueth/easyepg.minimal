@@ -28,8 +28,8 @@ docker run \
   -v {XML_STORAGE}:/easyepg/xml \
   --user=${UID}:${GID} \
   --name=easyepg \
-  --restart unless-stopped \
-  --net="bridge" \
+  --restart=unless-stopped \
+  --network=bridge \
   qoopido/easyepg.minimal:lite-scratch
 ```
 
