@@ -29,35 +29,36 @@ WORKDIR ${WORKDIR}
 ADD https://github.com/sunsettrack4/script.service.easyepg-lite/archive/master.tar.gz ${WORKDIR}/
 COPY root /
 
-RUN \
-    ### prepare build
-    tar -xf master.tar.gz --strip 1 \
+RUN tar -xf master.tar.gz --strip 1 \
     && find . ! -name "easyepg.py" -type f -maxdepth 1 -exec rm -f {} + \
     && pipreqs ./ \
-    && python3 -m pip install --no-cache --upgrade -r requirements.txt \
-    ### run nuitka
-    && python3 -OO -m nuitka \
+    && python3 -m pip install --no-cache --upgrade -r requirements.txt
+
+RUN python3 -OO -m nuitka \
         --standalone \
         --include-data-dir=./resources/data=resources/data \
         --follow-imports \
         --follow-stdlib \
         --nofollow-import-to=pytest \
-        --python-flag=nosite,-OO \
+        --python-flag=-S,-OO \
         --plugin-enable=anti-bloat,implicit-imports,data-files,pylint-warnings \
         --warn-implicit-exceptions \
         --warn-unusual-code \
         --prefer-source-code \
-        ./easyepg.py \
-    ### add dynamic modules
-    && cd easyepg.dist/ \
-    && /processLibs.sh \
-    ### run strip and upx
+        ./easyepg.py
+
+RUN cd easyepg.dist/ \
+    && /usr/local/sbin/processLibs
+
+RUN cd easyepg.dist/ \
     && strip --strip-unneeded --strip-debug easyepg \
     && upx --best --overlay=strip easyepg
 
+RUN cd /var/dist \
+    && cp -r /var/app/easyepg.dist/* ./
+
 FROM scratch
 
-COPY --from=builder /storage /storage
-COPY --from=builder /var/app/easyepg.dist/ /
+COPY --from=builder /var/dist/ /
 
 ENTRYPOINT [ "/easyepg" ]
