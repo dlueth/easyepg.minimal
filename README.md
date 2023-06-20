@@ -128,4 +128,3 @@ If you decide to remove `XML_STORAGE` the finished XML files can be found in the
  │ │ │ │ │
  * * * * *  /command/to/execute
 ```
-
