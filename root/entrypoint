@@ -92,6 +92,9 @@ fi
 chown -R ${USER_ID}:${GROUP_ID} /easyepg
 chown -R ${USER_ID}:${GROUP_ID} /tmp
 
+chmod -R 775 /easyepg
+chmod -R 777 /tmp
+
 if [[ ! -z "${PACKAGES}" ]]; then
   /usr/local/sbin/packages.install
   /usr/local/sbin/packages.cleanup

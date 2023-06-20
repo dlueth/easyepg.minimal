@@ -27,6 +27,12 @@ if [[ "${MODE}" = "cron" ]] && [[ "${UPDATE}" = "yes" ]]; then
     /usr/local/bin/easyepg.update
 fi
 
+chown -R ${USER_ID}:${GROUP_ID} /easyepg
+chown -R ${USER_ID}:${GROUP_ID} /tmp
+
+chmod -R 775 /easyepg
+chmod -R 777 /tmp
+
 echo "Cleaning up"
 rm -rf /easyepg/xml/*
 
