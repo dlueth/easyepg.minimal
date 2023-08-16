@@ -1,0 +1,3 @@
+[submodule "easyepg"]
+	path = easyepg
+	url = https://github.com/sunsettrack4/script.service.easyepg-lite.git

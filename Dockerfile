@@ -1,8 +1,8 @@
-FROM python:3.10-slim-bullseye as base
+FROM python:3.9-slim-buster as base
 
-ARG APT_DEPENDENCIES="build-essential ccache libfuse-dev patchelf upx"
-ARG PIP_DEPENDENCIES="nuitka ordered-set pipreqs"
-ENV DEBIAN_FRONTEND="noninteractive" \
+ENV APT_DEPENDENCIES="build-essential ccache libfuse-dev upx scons git dh-autoreconf" \
+    PIP_DEPENDENCIES="nuitka ordered-set pipreqs" \
+    DEBIAN_FRONTEND="noninteractive" \
     TERM=xterm
 
 RUN \
@@ -18,36 +18,49 @@ RUN \
     ### install apt packages
     && apt-get -qy update \
     && apt-get install -qy ${APT_DEPENDENCIES} \
+    ### install patchelf \
+    && cd /tmp \
+    && git clone https://github.com/brenoguim/patchelf.git \
+    && cd patchelf \
+    # && git checkout breno.474 \
+    && ./bootstrap.sh \
+    && mkdir build \
+    && cd build \
+    && ../configure \
+    && make \
+    && make install \
     ### setup python 3
     && python3 -m ensurepip \
+    && python3 -m pip install --upgrade pip \
     && python3 -m pip install --no-cache --upgrade ${PIP_DEPENDENCIES}
+
 
 FROM base as builder
 
-ARG WORKDIR=/var/app
+ARG TARGETARCH
+ENV WORKDIR=/var/app
 WORKDIR ${WORKDIR}
-ADD https://github.com/sunsettrack4/script.service.easyepg-lite/archive/master.tar.gz ${WORKDIR}/
+COPY easyepg ${WORKDIR}/
 COPY root /
 
-RUN tar -xf master.tar.gz --strip 1 \
-    && find . ! -name "easyepg.py" -type f -maxdepth 1 -exec rm -f {} + \
+RUN find . ! -name "easyepg.py" -type f -maxdepth 1 -exec rm -f {} + \
     && pipreqs ./ \
     && python3 -m pip install --no-cache --upgrade -r requirements.txt
 
 RUN python3 -OO -m nuitka \
-        --standalone \
-        --include-data-dir=./resources/data=resources/data \
-        --follow-imports \
-        --follow-stdlib \
-        --nofollow-import-to=pytest \
-        --python-flag=-S,-OO \
-        --plugin-enable=anti-bloat,implicit-imports,data-files,pylint-warnings \
-        --warn-implicit-exceptions \
-        --warn-unusual-code \
-        --prefer-source-code \
-        ./easyepg.py
+    --standalone \
+    --follow-imports \
+    --follow-stdlib \
+    --prefer-source-code \
+    --python-flag=-S,-OO \
+    --plugin-enable=anti-bloat,implicit-imports,data-files,pylint-warnings \
+    --include-data-dir=./resources/data=resources/data \
+    --warn-implicit-exceptions \
+    --warn-unusual-code \
+    ./easyepg.py
 
 RUN cd easyepg.dist/ \
+    && mv ./easyepg.bin ./easyepg \
     && /usr/local/sbin/processLibs
 
 RUN cd easyepg.dist/ \
@@ -55,10 +68,16 @@ RUN cd easyepg.dist/ \
     && upx --best --overlay=strip easyepg
 
 RUN cd /var/dist \
-    && cp -r /var/app/easyepg.dist/* ./
+    && cp -r ${WORKDIR}/easyepg.dist/* ./
+
 
 FROM scratch
 
+COPY --from=tarampampam/curl:latest /bin/curl /bin/curl
 COPY --from=builder /var/dist/ /
+
+HEALTHCHECK --interval=30s --timeout=6s --retries=5 --start-period=30s CMD [ \
+    "/bin/curl", "--fail", "http://127.0.0.1:4000/" \
+]
 
 ENTRYPOINT [ "/easyepg" ]
